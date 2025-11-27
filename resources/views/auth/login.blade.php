@@ -2,7 +2,29 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
+    <!-- Toggle Buttons -->
+    <div class="flex mb-6 bg-white/30 rounded-full overflow-hidden border-0">
+        <button type="button" 
+                onclick="showForm('login')" 
+                id="loginBtn"
+                class="flex-1 py-3 px-6 text-sm font-medium transition-colors bg-white text-gray-900 rounded-full relative">
+            <svg class="inline-block w-4 h-4 mr-2" id="loginCheck" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+            Inicio de sesión
+        </button>
+        <button type="button" 
+                onclick="showForm('register')" 
+                id="registerBtn"
+                class="flex-1 py-3 px-6 text-sm font-medium transition-colors text-gray-700 rounded-full relative">
+            <svg class="inline-block w-4 h-4 mr-2 invisible" id="registerCheck" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+            Registrarse
+        </button>
+    </div>
+
+    <form method="POST" action="{{ route('login') }}" id="loginForm">
         @csrf
 
         <!-- Email Address -->
@@ -44,4 +66,83 @@
             </x-primary-button>
         </div>
     </form>
+
+    <form method="POST" action="{{ route('register') }}" id="registerForm" style="display: none;">
+        @csrf
+
+        <!-- Name -->
+        <div>
+            <x-input-label for="name" :value="__('Name')" />
+            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
+            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+        </div>
+
+        <!-- Email Address -->
+        <div class="mt-4">
+            <x-input-label for="email" :value="__('Email')" />
+            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
+            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        </div>
+
+        <!-- Password -->
+        <div class="mt-4">
+            <x-input-label for="password" :value="__('Password')" />
+
+            <x-text-input id="password" class="block mt-1 w-full"
+                            type="password"
+                            name="password"
+                            required autocomplete="new-password" />
+
+            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="mt-4">
+            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+
+            <x-text-input id="password_confirmation" class="block mt-1 w-full"
+                            type="password"
+                            name="password_confirmation" required autocomplete="new-password" />
+
+            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        </div>
+
+        <div class="flex items-center justify-end mt-4">
+
+            <x-primary-button class="ms-4">
+                {{ __('Register') }}
+            </x-primary-button>
+        </div>
+    </form>
+
+    <script>
+        function showForm(formType) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const loginBtn = document.getElementById('loginBtn');
+            const registerBtn = document.getElementById('registerBtn');
+            const loginCheck = document.getElementById('loginCheck');
+            const registerCheck = document.getElementById('registerCheck');
+
+            if (formType === 'login') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+                loginBtn.classList.add('bg-white', 'text-gray-900');
+                loginBtn.classList.remove('text-gray-700');
+                loginCheck.classList.remove('invisible');
+                registerBtn.classList.remove('bg-white', 'text-gray-900');
+                registerBtn.classList.add('text-gray-700');
+                registerCheck.classList.add('invisible');
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+                registerBtn.classList.add('bg-white', 'text-gray-900');
+                registerBtn.classList.remove('text-gray-700');
+                registerCheck.classList.remove('invisible');
+                loginBtn.classList.remove('bg-white', 'text-gray-900');
+                loginBtn.classList.add('text-gray-700');
+                loginCheck.classList.add('invisible');
+            }
+        }
+    </script>
 </x-guest-layout>
