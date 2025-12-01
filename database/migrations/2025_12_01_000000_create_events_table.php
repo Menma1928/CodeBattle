@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('direccion')->nullable();
             $table->string('estado')->default('pendiente');
             $table->string('url_imagen')->nullable();
+            $table->foreignId('admin_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -29,6 +30,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('events', function (Blueprint $table) {
+            $table->dropForeign(['admin_id']);
+            $table->dropColumn('admin_id');
+        });
         Schema::dropIfExists('events');
     }
 };

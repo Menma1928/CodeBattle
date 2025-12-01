@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\User;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Event>
@@ -17,7 +18,15 @@ class EventFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'nombre' => fake()->sentence(3),
+            'descripcion' => fake()->paragraph(),
+            'fecha_inicio' => fake()->dateTimeBetween('-1 month', '+1 month'),
+            'fecha_fin' => fake()->dateTimeBetween('+1 month', '+3 months'),
+            'direccion' => fake()->address(),
+            'estado' => fake()->randomElement(['activo', 'inactivo', 'finalizado']),
+            'url_imagen' => fake()->imageUrl(),
+            'admin_id'=> User::all()->random()->id,
+
         ];
     }
 }
