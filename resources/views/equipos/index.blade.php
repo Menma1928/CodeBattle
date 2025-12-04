@@ -75,9 +75,11 @@
                 @endcan
                 
                 @can('unirse equipos')
+                @if($title != 'Mis Equipos')
                 <button onclick="alert('Funcionalidad en desarrollo')" style="background: #28a745; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
                     Solicitar Unirme
                 </button>
+                @endif
                 @endcan
             </div>
         </div>
