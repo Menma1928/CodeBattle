@@ -51,7 +51,7 @@
         @endhasrole
 
         @hasrole('Administrador')
-        <a href="{{ route('equipos.misEquipos') }}" style="text-decoration: none; width: 100%;">
+        <a href="{{ route('eventos.misEventos') }}" style="text-decoration: none; width: 100%;">
             <div style="background: linear-gradient(180deg,#bdbdbd,#e0e0e0); border-radius: 20px; padding: 2.5rem 0; font-size: 2.5rem; color: white; font-weight: bold; box-shadow: 0 2px 8px #ccc; text-align: center; width: 100%; display: flex; align-items: center; justify-content: center; gap: 1rem;">
                 Mis eventos
                 <span style="margin-left: 1rem; font-size:2.5rem;">&#9651;</span>

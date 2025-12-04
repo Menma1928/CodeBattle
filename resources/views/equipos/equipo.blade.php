@@ -142,7 +142,7 @@
                     Abandonar Equipo
                 </button>
             </form>
-            @elseif(!$is_member && !auth()->user()->hasRole('Super Admin'))
+            @elseif(!$is_member && auth()->user()->hasRole('Participante') && $equipo->users->count() < 5 )
             <button onclick="alert('Funcionalidad en desarrollo')" style="background: #28a745; color: white; border: none; padding: 0.75rem 2rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
                 Solicitar Unirme
             </button>
