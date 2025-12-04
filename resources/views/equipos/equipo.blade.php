@@ -70,6 +70,9 @@
                     <div style="flex: 1;">
                         <h3 style="font-size: 1.1rem; font-weight: bold; color: #333; margin: 0 0 0.25rem 0;">
                             {{ $member->name }}
+                            @if($member->id == auth()->id())
+                            <span style="color: #6c5b7b;">(Tú)</span>
+                            @endif
                         </h3>
                         <p style="color: #666; font-size: 0.9rem; margin: 0;">
                             {{ $member->email }}
@@ -88,7 +91,7 @@
                         </select>
                         
                         <!-- Botón eliminar -->
-                        <form method="POST" action="#" style="margin: 0;" onsubmit="event.preventDefault(); alert('Funcionalidad en desarrollo');">
+                        <form method="POST" action="{{ route('equipos.removeMember', ['equipo' => $equipo, 'user' => $member]) }}" style="margin: 0;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar a este miembro del equipo?');">
                             @csrf
                             @method('DELETE')
                             <button type="submit" style="background: #dc3545; color: white; border: none; padding: 0.5rem 0.75rem; border-radius: 5px; cursor: pointer; font-size: 0.9rem;" title="Eliminar miembro">
@@ -130,7 +133,16 @@
                     Eliminar Equipo
                 </button>
             </form>
-            @elseif(!$is_leader && !auth()->user()->hasRole('Super Admin'))
+            @elseif($is_member && !$is_leader)
+            <!-- Botón para abandonar el equipo -->
+            <form method="POST" action="{{ route('equipos.leave', $equipo) }}" style="margin: 0;" onsubmit="return confirm('¿Estás seguro de que deseas abandonar este equipo?');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" style="background: #ffc107; color: white; border: none; padding: 0.75rem 2rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
+                    Abandonar Equipo
+                </button>
+            </form>
+            @elseif(!$is_member && !auth()->user()->hasRole('Super Admin'))
             <button onclick="alert('Funcionalidad en desarrollo')" style="background: #28a745; color: white; border: none; padding: 0.75rem 2rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
                 Solicitar Unirme
             </button>

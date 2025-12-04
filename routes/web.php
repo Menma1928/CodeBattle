@@ -25,6 +25,8 @@ Route::middleware('auth')->group(function () {
     Route::group(['middleware' => ['permission:ver equipos']], function(){
         
         Route::resource('equipos', TeamController::class);
+        Route::delete('/equipos/{equipo}/remove/{user}', [TeamController::class, 'removeMember'])->name('equipos.removeMember');
+        Route::delete('/equipos/{equipo}/leave', [TeamController::class, 'leaveTeam'])->name('equipos.leave');
     });
     Route::get('/mis-equipos', [TeamController::class, 'myTeams'])->name('equipos.misEquipos')->middleware(['permission:ver mis equipos']);
 });

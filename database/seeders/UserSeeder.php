@@ -71,6 +71,7 @@ class UserSeeder extends Seeder
         ]);
 
         $participante_role->givePermissionTo([
+            'ver equipos',
             'ver eventos',
             'inscribirse eventos',
             'ver mis equipos',

@@ -18,6 +18,29 @@
         <span style="margin-left: 1rem; font-size:2.5rem;">&#9651;</span>
     </div>
     
+    <!-- Barra de búsqueda y filtros -->
+    <div style="width: 100%; max-width: 1200px; background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <form method="GET" action="{{ route('equipos.index') }}" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <!-- Barra de búsqueda -->
+            <div style="flex: 1; min-width: 300px;">
+                <input type="text" name="search" placeholder="Buscar equipos..." value="{{ request('search') }}" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 1rem;">
+            </div>
+            
+            <!-- Botón de búsqueda -->
+            <button type="submit" style="background: #6c5b7b; color: white; border: none; padding: 0.75rem 2rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
+                Buscar
+            </button>
+            
+            @if(request('search'))
+            <a href="{{ route('equipos.index') }}" style="text-decoration: none;">
+                <button type="button" style="background: #dc3545; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
+                    Limpiar
+                </button>
+            </a>
+            @endif
+        </form>
+    </div>
+    
     <!-- Lista de equipos -->
     <div style="width: 100%; max-width: 1200px;">
         @forelse($teams as $team)
