@@ -63,8 +63,17 @@ class TeamController extends Controller
     }
 
     public function show(Team $equipo){
+        $equipo->load('users', 'event');
         $members = $equipo->users;
-        return view('equipos.show', compact('equipo', 'members'));
+        
+        // Verificar si el usuario autenticado es líder del equipo
+        $is_leader = false;
+        $user_role_in_team = $equipo->users()->where('user_id', auth()->id())->first();
+        if ($user_role_in_team && $user_role_in_team->pivot->rol === 'Líder') {
+            $is_leader = true;
+        }
+        
+        return view('equipos.equipo', compact('equipo', 'members', 'is_leader'));
     }
 
 

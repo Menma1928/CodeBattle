@@ -61,62 +61,56 @@
             </div>
         </div>
 
-        <!-- Sección de equipos -->
+        <!-- Sección de tu equipo -->
         @if($user_team != null)
-        <div style="background: #6c5b7b; border-radius: 10px; padding: 2rem;">
+        <div style="background: white; border-radius: 10px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h2 style="color: white; font-size: 1.5rem; margin: 0;">Nombre de equipo</h2>
-                <button style="background: white; border: none; padding: 0.5rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer;">
-                    Cambiar
-                </button>
+                <h2 style="font-size: 1.8rem; font-weight: bold; color: #333; margin: 0;">Tu Equipo para Este Evento</h2>
+                <a href="{{ route('equipos.show', $user_team) }}" style="text-decoration: none;">
+                    <button style="background: #6c5b7b; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
+                        Ver Equipo
+                    </button>
+                </a>
+            </div>
+            
+            <!-- Nombre del equipo -->
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.5rem; font-weight: bold; color: #6c5b7b; margin: 0;">{{ $user_team->nombre }}</h3>
+                @if($user_team->descripcion)
+                <p style="color: #666; margin: 0.5rem 0 0 0;">{{ $user_team->descripcion }}</p>
+                @endif
             </div>
 
-            <!-- Líder -->
-            <div style="background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div style="width: 50px; height: 50px; background: #e0e0e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                        +
+            <!-- Lista de integrantes -->
+            <div style="background: #f8f9fa; border-radius: 10px; padding: 1rem;">
+                <h4 style="font-size: 1.2rem; font-weight: bold; color: #333; margin: 0 0 1rem 0;">Integrantes ({{ $user_team->users->count() }}/5)</h4>
+                
+                @foreach($user_team->users as $index => $member)
+                <div style="padding: 1rem; display: flex; align-items: center; gap: 1rem; {{ $index > 0 ? 'border-top: 1px solid #e0e0e0;' : '' }}">
+                    <!-- Avatar -->
+                    <div style="flex-shrink: 0; width: 50px; height: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; font-weight: bold;">
+                        {{ substr($member->name, 0, 1) }}
                     </div>
-                    <div>
-                        <div style="font-weight: bold; font-size: 1.1rem;">Líder (Tú)</div>
-                        <div style="color: #666; font-size: 0.9rem;">Rol - Front</div>
+                    
+                    <!-- Información del miembro -->
+                    <div style="flex: 1;">
+                        <div style="font-weight: bold; font-size: 1rem; color: #333;">
+                            {{ $member->name }}
+                            @if($member->id == auth()->id())
+                            <span style="color: #6c5b7b;">(Tú)</span>
+                            @endif
+                        </div>
+                        <div style="color: #666; font-size: 0.85rem;">{{ $member->email }}</div>
                     </div>
-                </div>
-                <button style="background: white; border: 2px solid #333; padding: 0.5rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer;">
-                    Cambiar rol
-                </button>
-            </div>
-
-            <!-- Invitar - Slot 1 -->
-            <div style="background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div style="width: 50px; height: 50px; background: #e0e0e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                        +
-                    </div>
-                    <div>
-                        <div style="font-weight: bold; font-size: 1.1rem;">Invitar</div>
-                        <div style="color: #666; font-size: 0.9rem;">Rol - por asignar</div>
-                    </div>
-                </div>
-                <button style="background: white; border: 2px solid #333; padding: 0.5rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer;">
-                    Cambiar rol
-                </button>
-            </div>
-
-            <!-- Invitar - Slot 2 -->
-            <div style="background: white; border-radius: 10px; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div style="width: 50px; height: 50px; background: #e0e0e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
-                        +
-                    </div>
-                    <div>
-                        <div style="font-weight: bold; font-size: 1.1rem;">Invitar</div>
-                        <div style="color: #666; font-size: 0.9rem;">Rol - por asignar</div>
+                    
+                    <!-- Rol -->
+                    <div style="flex-shrink: 0;">
+                        <span style="background: #6c5b7b; color: white; padding: 0.4rem 0.9rem; border-radius: 15px; font-size: 0.85rem; font-weight: bold;">
+                            {{ $member->pivot->role ?? 'Miembro' }}
+                        </span>
                     </div>
                 </div>
-                <button style="background: white; border: 2px solid #333; padding: 0.5rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer;">
-                    Cambiar rol
-                </button>
+                @endforeach
             </div>
         </div>
         @endif
@@ -128,31 +122,33 @@
             @forelse($teams as $team)
             <div style="background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 <div style="display: flex; gap: 1.5rem; align-items: flex-start;">
-                    <!-- Banner del equipo -->
-                    <div style="flex-shrink: 0;">
+                    <!-- Banner del equipo (clickeable) -->
+                    <a href="{{ route('equipos.show', $team) }}" style="flex-shrink: 0; text-decoration: none;">
                         @if($team->url_banner)
-                            <img src="{{ $team->url_banner }}" alt="{{ $team->nombre }}" style="width: 120px; height: 120px; border-radius: 10px; object-fit: cover;">
+                            <img src="{{ $team->url_banner }}" alt="{{ $team->nombre }}" style="width: 120px; height: 120px; border-radius: 10px; object-fit: cover; cursor: pointer;">
                         @else
-                            <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; font-weight: bold;">
+                            <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; font-weight: bold; cursor: pointer;">
                                 {{ substr($team->nombre, 0, 1) }}
                             </div>
                         @endif
-                    </div>
+                    </a>
 
-                    <!-- Información del equipo -->
-                    <div style="flex: 1;">
-                        <h3 style="font-size: 1.5rem; font-weight: bold; color: #333; margin: 0 0 0.5rem 0;">
-                            {{ $team->nombre }}
-                        </h3>
-                        @if($team->posicion)
-                            <p style="margin: 0 0 0.5rem 0; color: #666; font-size: 0.9rem;">
-                                <strong>Posición:</strong> #{{ $team->posicion }}
+                    <!-- Información del equipo (clickeable) -->
+                    <a href="{{ route('equipos.show', $team) }}" style="flex: 1; text-decoration: none; color: inherit;">
+                        <div>
+                            <h3 style="font-size: 1.5rem; font-weight: bold; color: #333; margin: 0 0 0.5rem 0;">
+                                {{ $team->nombre }}
+                            </h3>
+                            @if($team->posicion)
+                                <p style="margin: 0 0 0.5rem 0; color: #666; font-size: 0.9rem;">
+                                    <strong>Posición:</strong> #{{ $team->posicion }}
+                                </p>
+                            @endif
+                            <p style="margin: 0; color: #666; line-height: 1.6;">
+                                {{ $team->descripcion ?? 'Sin descripción disponible.' }}
                             </p>
-                        @endif
-                        <p style="margin: 0; color: #666; line-height: 1.6;">
-                            {{ $team->descripcion ?? 'Sin descripción disponible.' }}
-                        </p>
-                    </div>
+                        </div>
+                    </a>
 
                     <!-- Botones de acción -->
                     <div style="display: flex; flex-direction: column; gap: 0.75rem; flex-shrink: 0;">
@@ -163,17 +159,19 @@
                         @endcan
                         
                         @can('unirse equipos')
+                        @if(!auth()->user()->hasRole('Super Admin'))
                         <button style="background: #28a745; color: white; border: none; padding: 0.5rem 1.25rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
                             Solicitar Unirme
                         </button>
+                        @endif
                         @endcan
                         
                         @can('eliminar equipos')
-                        <form method="POST" action="#" style="margin: 0;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este equipo del evento?');">
+                        <form method="POST" action="{{ route('equipos.destroy', $team) }}" style="margin: 0;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este equipo?');">
                             @csrf
                             @method('DELETE')
                             <button type="submit" style="background: #dc3545; color: white; border: none; padding: 0.5rem 1.25rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.9rem; width: 100%;">
-                                Eliminar del Evento
+                                Eliminar Equipo
                             </button>
                         </form>
                         @endcan
@@ -186,6 +184,7 @@
             </div>
             @endforelse
         </div>
+        {{ $teams->links() }}
     </div>
 </div>
 @endsection

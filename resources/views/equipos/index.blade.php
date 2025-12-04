@@ -22,8 +22,8 @@
     <div style="width: 100%; max-width: 1200px;">
         @forelse($teams as $team)
         <div style="background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 1.5rem;">
-            <!-- Banner del equipo -->
-            <div style="flex-shrink: 0;">
+            <!-- Banner del equipo (clickeable) -->
+            <a href="{{ route('equipos.show', $team) }}" style="flex-shrink: 0; text-decoration: none;">
                 @if($team->url_banner)
                     <img src="{{ $team->url_banner }}" alt="{{ $team->nombre }}" style="width: 80px; height: 80px; border-radius: 10px; object-fit: cover; cursor: pointer;">
                 @else
@@ -31,28 +31,30 @@
                         {{ substr($team->nombre, 0, 1) }}
                     </div>
                 @endif
-            </div>
+            </a>
             
-            <!-- Información del equipo -->
-            <div style="flex: 1;">
-                <h3 style="margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: bold; color: #333;">
-                    {{ $team->nombre }}
-                </h3>
-                <p style="margin: 0 0 0.5rem 0; color: #666; font-size: 0.9rem;">
-                    <strong>Evento:</strong> 
-                    <a href="{{ route('eventos.show', $team->event) }}" style="color: #6c5b7b; text-decoration: none; font-weight: bold;">
-                        {{ $team->event->nombre }}
-                    </a>
-                </p>
-                @if($team->posicion)
-                <p style="margin: 0 0 0.5rem 0; color: #666; font-size: 0.9rem;">
-                    <strong>Posición:</strong> <span style="background: #ffc107; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.8rem;">#{{ $team->posicion }}</span>
-                </p>
-                @endif
-                <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">
-                    {{ Str::limit($team->descripcion, 120) ?? 'Sin descripción disponible.' }}
-                </p>
-            </div>
+            <!-- Información del equipo (clickeable) -->
+            <a href="{{ route('equipos.show', $team) }}" style="flex: 1; text-decoration: none; color: inherit;">
+                <div>
+                    <h3 style="margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: bold; color: #333;">
+                        {{ $team->nombre }}
+                    </h3>
+                    <p style="margin: 0 0 0.5rem 0; color: #666; font-size: 0.9rem;">
+                        <strong>Evento:</strong> 
+                        <span style="color: #6c5b7b; font-weight: bold;">
+                            {{ $team->event->nombre }}
+                        </span>
+                    </p>
+                    @if($team->posicion)
+                    <p style="margin: 0 0 0.5rem 0; color: #666; font-size: 0.9rem;">
+                        <strong>Posición:</strong> <span style="background: #ffc107; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.8rem;">#{{ $team->posicion }}</span>
+                    </p>
+                    @endif
+                    <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">
+                        {{ Str::limit($team->descripcion, 120) ?? 'Sin descripción disponible.' }}
+                    </p>
+                </div>
+            </a>
             
             <!-- Botones de acción -->
             <div style="display: flex; gap: 1rem; flex-shrink: 0;">
@@ -75,7 +77,7 @@
                 @endcan
                 
                 @can('unirse equipos')
-                @if($title != 'Mis Equipos')
+                @if($title != 'Mis Equipos' && !auth()->user()->hasRole('Super Admin'))
                 <button onclick="alert('Funcionalidad en desarrollo')" style="background: #28a745; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
                     Solicitar Unirme
                 </button>

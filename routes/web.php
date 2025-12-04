@@ -19,9 +19,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::group(['middleware' => ['permission:ver eventos']], function(){
-        Route::get('/mis-eventos', [EventController::class, 'myEvents'])->name('eventos.misEventos');
         Route::resource('eventos', EventController::class);
     });
+    Route::get('/mis-eventos', [EventController::class, 'myEvents'])->name('eventos.misEventos')->middleware(['permission:ver mis eventos']);
     Route::group(['middleware' => ['permission:ver equipos']], function(){
         
         Route::resource('equipos', TeamController::class);

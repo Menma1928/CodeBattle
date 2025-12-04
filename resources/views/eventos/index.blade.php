@@ -17,6 +17,45 @@
         <span style="margin-left: 1rem; font-size:2.5rem;">&#9651;</span>
     </div>
     
+    <!-- Barra de búsqueda y filtros -->
+    <div style="width: 100%; max-width: 1200px; background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <form method="GET" action="{{ route('eventos.index') }}" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <!-- Barra de búsqueda -->
+            <div style="flex: 1; min-width: 300px;">
+                <input type="text" name="search" placeholder="Buscar eventos..." value="{{ request('search') }}" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 1rem;">
+            </div>
+            
+            <!-- Filtros de estado -->
+            <div style="display: flex; gap: 0.5rem;">
+                <button type="submit" name="estado" value="todos" style="background: {{ request('estado', 'todos') == 'todos' ? '#6c5b7b' : '#e0e0e0' }}; color: {{ request('estado', 'todos') == 'todos' ? 'white' : '#666' }}; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
+                    Todos
+                </button>
+                <button type="submit" name="estado" value="activo" style="background: {{ request('estado') == 'activo' ? '#28a745' : '#e0e0e0' }}; color: {{ request('estado') == 'activo' ? 'white' : '#666' }}; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
+                    Activos
+                </button>
+                <button type="submit" name="estado" value="finalizado" style="background: {{ request('estado') == 'finalizado' ? '#dc3545' : '#e0e0e0' }}; color: {{ request('estado') == 'finalizado' ? 'white' : '#666' }}; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
+                    Finalizados
+                </button>
+                <button type="submit" name="estado" value="proximo" style="background: {{ request('estado') == 'proximo' ? '#ffc107' : '#e0e0e0' }}; color: {{ request('estado') == 'proximo' ? 'white' : '#666' }}; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
+                    Próximos
+                </button>
+            </div>
+            
+            <!-- Botón de búsqueda -->
+            <button type="submit" style="background: #6c5b7b; color: white; border: none; padding: 0.75rem 2rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
+                Buscar
+            </button>
+            
+            @if(request('search') || request('estado'))
+            <a href="{{ route('eventos.index') }}" style="text-decoration: none;">
+                <button type="button" style="background: #dc3545; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
+                    Limpiar
+                </button>
+            </a>
+            @endif
+        </form>
+    </div>
+    
     <!-- Lista de eventos -->
     <div style="width: 100%; max-width: 1200px;">
         @forelse($events as $event)

@@ -8,9 +8,26 @@ use App\Models\Team;
 
 class EventController extends Controller
 {
-    public function index(){
+    public function index(Request $request){
         $title = "Eventos";
-        $events = Event::query()->paginate(10);
+        $query = Event::query();
+        
+        // Búsqueda por nombre o descripción
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nombre', 'like', '%' . $search . '%')
+                  ->orWhere('descripcion', 'like', '%' . $search . '%')
+                  ->orWhere('direccion', 'like', '%' . $search . '%');
+            });
+        }
+        
+        // Filtro por estado
+        if ($request->has('estado') && $request->estado != 'todos') {
+            $query->where('estado', $request->estado);
+        }
+        
+        $events = $query->paginate(10)->withQueryString();
         return view('eventos.index', compact('events', 'title'));
     }
 
@@ -78,10 +95,11 @@ class EventController extends Controller
         if (!$user_is_admin) {
             $user_team = auth()->user()->teams()
             ->where('event_id', $evento->id)
+            ->with('users')
             ->first();
         }
 
-        $teams = Team::where('event_id', $evento->id)->get();
+        $teams = Team::where('event_id', $evento->id)->paginate(5);
         return view('eventos.evento', compact('evento', 'teams', 'user_is_admin', 'user_team'));
     }
 
