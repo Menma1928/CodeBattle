@@ -6,10 +6,37 @@
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex items-center">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @php
+                        $isEventos = request()->routeIs('eventos.index') && !request()->has('mis');
+                        $isCrear = request()->routeIs('eventos.create');
+                        $isMis = request()->routeIs('eventos.index') && request()->has('mis');
+                        $tabActiveStyle = 'background: linear-gradient(180deg,#bdbdbd,#e0e0e0) !important; color: white !important; box-shadow: 0 2px 8px #ccc !important; border-bottom: 4px solid #bdbdf3 !important;';
+                        $tabInactiveStyle = 'background: #fff; color: #6c5b7b; border-bottom: 4px solid transparent;';
+                    @endphp
+                    @can('ver eventos')
+                                <a href="{{ route('eventos.index') }}"
+                                    class="px-4 py-2 font-semibold transition-all duration-150 border-none focus:outline-none ms-2"
+                                       style="background: transparent; color: {{ $isEventos ? '#fff' : '#6c5b7b' }}; border-bottom: 2px solid {{ $isEventos ? '#bdbdf3' : 'transparent' }}; border-radius: 0; box-shadow: none;"
+                                >Eventos</a>
+                    @endcan
+                    @can('crear eventos')
+                                <a href="{{ route('eventos.create') }}"
+                                    class="px-4 py-2 font-semibold transition-all duration-150 border-none focus:outline-none ms-2"
+                                       style="background: transparent; color: {{ $isCrear ? '#fff' : '#6c5b7b' }}; border-bottom: 2px solid {{ $isCrear ? '#bdbdf3' : 'transparent' }}; border-radius: 0; box-shadow: none;"
+                                >Crear Evento</a>
+                    @endcan
+                    @can('ver mis eventos')
+                        @unless(auth()->user()->hasRole('Super Admin'))
+                                <a href="{{ route('eventos.index') }}?mis=1"
+                                    class="px-4 py-2 font-semibold transition-all duration-150 border-none focus:outline-none ms-2"
+                                       style="background: transparent; color: {{ $isMis ? '#fff' : '#6c5b7b' }}; border-bottom: 2px solid {{ $isMis ? '#bdbdf3' : 'transparent' }}; border-radius: 0; box-shadow: none;"
+                                >Mis eventos</a>
+                        @endunless
+                    @endcan
                 </div>
             </div>
 

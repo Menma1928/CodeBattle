@@ -14,9 +14,9 @@
     </div>
     <div style="width: 100%; max-width: 1200px; background: linear-gradient(180deg,#bdbdbd,#e0e0e0); border-radius: 20px; padding: 2.5rem 0; font-size: 2.5rem; color: white; font-weight: bold; box-shadow: 0 2px 8px #ccc; text-align: center; display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
         Eventos
-        <span style="margin-left: 1rem; font-size:2.5rem;">&#9651;</span>
+        <span style="margin-left: 1rem; font-size:2.5rem; color: white;">&#9651;</span>
     </div>
-    
+
     <!-- Lista de eventos -->
     <div style="width: 100%; max-width: 1200px;">
         @forelse($events as $event)
@@ -31,7 +31,7 @@
                     </div>
                 @endif
             </a>
-            
+
             <!-- Información del evento -->
             <div style="flex: 1; cursor: pointer;" onclick="window.location='{{ route('eventos.show', $event) }}'">
                 <h3 style="margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: bold; color: #333;">
@@ -44,7 +44,7 @@
                     {{ Str::limit($event->descripcion, 100) ?? 'Supporting line text lorem ipsum dolor sit amet, consectetur.' }}
                 </p>
             </div>
-            
+
             <!-- Botones de acción -->
             <div style="display: flex; gap: 1rem; flex-shrink: 0;">
                 @can('editar eventos')
