@@ -105,7 +105,14 @@ class UserSeeder extends Seeder
         ]);
         $participante_user->assignRole('Participante');
 
-        User::factory(100)->create();
+        $users = User::factory(80)->create();
+        foreach ($users as $user) {
+            $user->assignRole('Participante');
+        }
+        $users = User::factory(80)->create();
+        foreach ($users as $user) {
+            $user->assignRole('Administrador');
+        }
         
     }
 }

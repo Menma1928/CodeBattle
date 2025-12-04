@@ -15,7 +15,7 @@ class TeamController extends Controller
 
     public function myTeams(){
         $title = "Mis Equipos";
-        $teams = Team::where('admin_id', auth()->id())->paginate(10);
+        $teams = auth()->user()->teams()->paginate(10);
         return view('equipos.index', compact('teams', 'title'));
     }
 

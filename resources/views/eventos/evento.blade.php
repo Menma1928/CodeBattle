@@ -62,7 +62,7 @@
         </div>
 
         <!-- Sección de equipos -->
-        @hasrole('participante')
+        @if($user_team != null)
         <div style="background: #6c5b7b; border-radius: 10px; padding: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                 <h2 style="color: white; font-size: 1.5rem; margin: 0;">Nombre de equipo</h2>
@@ -119,7 +119,7 @@
                 </button>
             </div>
         </div>
-        @endhasrole
+        @endif
 
         <!-- Sección de equipos registrados -->
         <div style="margin-top: 2rem;">

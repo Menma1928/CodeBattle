@@ -73,8 +73,16 @@ class EventController extends Controller
     }
 
     public function show(Event $evento){
+        $user_is_admin = auth()->id() === $evento->admin_id; // saber si el usuario es administrador del evento
+        $user_team = null;
+        if (!$user_is_admin) {
+            $user_team = auth()->user()->teams()
+            ->where('event_id', $evento->id)
+            ->first();
+        }
+
         $teams = Team::where('event_id', $evento->id)->get();
-        return view('eventos.evento', compact('evento', 'teams'));
+        return view('eventos.evento', compact('evento', 'teams', 'user_is_admin', 'user_team'));
     }
 
     

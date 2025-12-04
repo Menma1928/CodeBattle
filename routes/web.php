@@ -23,9 +23,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('eventos', EventController::class);
     });
     Route::group(['middleware' => ['permission:ver equipos']], function(){
-        Route::get('/mis-equipos', [TeamController::class, 'myTeams'])->name('equipos.misEquipos');
+        
         Route::resource('equipos', TeamController::class);
     });
+    Route::get('/mis-equipos', [TeamController::class, 'myTeams'])->name('equipos.misEquipos')->middleware(['permission:ver mis equipos']);
 });
 
 
