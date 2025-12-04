@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Event;
 use App\Models\Team;
+use App\Models\EventRule;
+use App\Models\Requirement;
 
 class EventController extends Controller
 {
@@ -53,7 +55,7 @@ class EventController extends Controller
             'url_imagen' => 'nullable|string|max:255',
             'admin_id' => 'required|integer|exists:users,id',
         ]);
-        Event::create([
+        $event = Event::create([
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
             'fecha_inicio' => $request->fecha_inicio,
@@ -61,8 +63,33 @@ class EventController extends Controller
             'direccion' => $request->direccion,
             'estado' => $request->estado,
             'url_imagen' => $request->url_imagen,
-            'admin_id' => $request->admin_id,
+            'admin_id' => auth()->id(),
         ]);
+
+        // Guardar reglas si existen
+        if ($request->has('reglas')) {
+            foreach ($request->reglas as $regla) {
+                if (!empty($regla)) {
+                    EventRule::create([
+                        'event_id' => $event->id,
+                        'regla' => $regla,
+                    ]);
+                }
+            }
+        }
+
+        // Guardar requisitos si existen
+        if ($request->has('requisitos')) {
+            foreach ($request->requisitos as $requisito) {
+                if (!empty($requisito)) {
+                    Requirement::create([
+                        'event_id' => $event->id,
+                        'requisito' => $requisito,
+                    ]);
+                }
+            }
+        }
+
         return redirect()->route('eventos.index');
     }
 
