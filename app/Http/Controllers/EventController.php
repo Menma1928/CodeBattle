@@ -27,15 +27,24 @@ class EventController extends Controller
 
     public function store(Request $request){
         $request->validate([
-            'name' => 'required|string|max:255',
-            'date' => 'required|date',
-            'location' => 'required|string|max:255',
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'required|string|max:1000',
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'date',
+            'direccion' => 'required|string|max:255',
+            'estado' => 'required|string|max:100',
+            'url_imagen' => 'nullable|string|max:255',
+            'admin_id' => 'required|integer|exists:users,id',
         ]);
         Event::create([
-            'name' => $request->name,
-            'date' => $request->date,
-            'location' => $request->location,
-            'user_id' => auth()->id(),
+            'nombre' => $request->nombre,
+            'descripcion' => $request->descripcion,
+            'fecha_inicio' => $request->fecha_inicio,
+            'fecha_fin' => $request->fecha_fin,
+            'direccion' => $request->direccion,
+            'estado' => $request->estado,
+            'url_imagen' => $request->url_imagen,
+            'admin_id' => $request->admin_id,
         ]);
         return redirect()->route('eventos.index');
     }
