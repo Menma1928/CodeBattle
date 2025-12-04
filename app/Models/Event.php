@@ -33,4 +33,8 @@ class Event extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function requirements(): HasMany
+    {
+        return $this->hasMany(Requirement::class);
+    }
 }

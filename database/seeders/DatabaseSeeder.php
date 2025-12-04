@@ -9,6 +9,7 @@ use Database\Seeders\UserSeeder;
 use Database\Seeders\EventSeeder;
 use Database\Seeders\TeamSeeder;
 use Database\Seeders\ProjectSeeder;
+use Database\Seeders\RequirementSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -26,6 +27,7 @@ class DatabaseSeeder extends Seeder
             EventSeeder::class,
             TeamSeeder::class,
             ProjectSeeder::class,
+            RequirementSeeder::class,
         ]);
     }
 }

@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Team;
+use App\Models\Requirement;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;   
 
 class Project extends Model
 {
@@ -19,5 +23,9 @@ class Project extends Model
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
+    }
+    public function requirements(): BelongsToMany
+    {
+        return $this->belongsToMany(Requirement::class);
     }
 }

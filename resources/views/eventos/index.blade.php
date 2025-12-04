@@ -13,7 +13,7 @@
             @endhasrole</h2>
     </div>
     <div style="width: 100%; max-width: 1200px; background: linear-gradient(180deg,#bdbdbd,#e0e0e0); border-radius: 20px; padding: 2.5rem 0; font-size: 2.5rem; color: white; font-weight: bold; box-shadow: 0 2px 8px #ccc; text-align: center; display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
-        Eventos
+        {{ $title ?? 'Eventos' }}
         <span style="margin-left: 1rem; font-size:2.5rem;">&#9651;</span>
     </div>
     
@@ -37,11 +37,22 @@
                 <h3 style="margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: bold; color: #333;">
                     {{ $event->nombre }}
                 </h3>
-                <p style="margin: 0; color: #666; font-size: 0.9rem;">
-                    {{ $event->categoria ?? 'Category' }} • $$ • 1.2 miles away
+                <p style="margin: 0 0 0.5rem 0; color: #666; font-size: 0.9rem;">
+                    <strong>Estado:</strong> <span style="background: {{ $event->estado === 'activo' ? '#28a745' : ($event->estado === 'finalizado' ? '#dc3545' : '#ffc107') }}; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.8rem;">{{ ucfirst($event->estado) }}</span>
                 </p>
+                <p style="margin: 0 0 0.25rem 0; color: #666; font-size: 0.9rem;">
+                    <strong>Inicio:</strong> {{ \Carbon\Carbon::parse($event->fecha_inicio)->format('d/m/Y H:i') }}
+                    @if($event->fecha_fin)
+                        | <strong>Fin:</strong> {{ \Carbon\Carbon::parse($event->fecha_fin)->format('d/m/Y H:i') }}
+                    @endif
+                </p>
+                @if($event->direccion)
+                <p style="margin: 0 0 0.25rem 0; color: #666; font-size: 0.9rem;">
+                    <strong>Ubicación:</strong> {{ $event->direccion }}
+                </p>
+                @endif
                 <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">
-                    {{ Str::limit($event->descripcion, 100) ?? 'Supporting line text lorem ipsum dolor sit amet, consectetur.' }}
+                    {{ Str::limit($event->descripcion, 100) ?? 'Sin descripción disponible.' }}
                 </p>
             </div>
             

@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Event;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Team>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Requirement>
  */
-class TeamFactory extends Factory
+class RequirementFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -18,10 +18,8 @@ class TeamFactory extends Factory
     public function definition(): array
     {
         return [
-            'nombre' => fake()->company(),
-            'descripcion' => fake()->paragraph(),
-            'posicion' => fake()->randomDigit(),
-            'url_banner' => 'https://placehold.co/400x400',
+            'name' => $this->faker->word(),
+            'description' => $this->faker->sentence(),
             'event_id' => Event::all()->random()->id,
         ];
     }

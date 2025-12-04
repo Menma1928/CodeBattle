@@ -4,12 +4,20 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Event;
+use App\Models\Team;
 
 class EventController extends Controller
 {
     public function index(){
+        $title = "Eventos";
         $events = Event::query()->paginate(10);
-        return view('eventos.index', compact('events'));
+        return view('eventos.index', compact('events', 'title'));
+    }
+
+    public function myEvents(){
+        $title = "Mis Eventos";
+        $events = Event::where('admin_id', auth()->id())->paginate(10);
+        return view('eventos.index', compact('events', 'title'));
     }
 
     public function create(){
@@ -56,7 +64,10 @@ class EventController extends Controller
     }
 
     public function show(Event $evento){
-        return view('eventos.evento', compact('evento'));
+        $teams = Team::where('event_id', $evento->id)->get();
+        return view('eventos.evento', compact('evento', 'teams'));
     }
+
+    
 
 }
