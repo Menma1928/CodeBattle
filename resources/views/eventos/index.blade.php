@@ -70,7 +70,7 @@
                     </div>
                 @endif
             </a>
-            
+
             <!-- Información del evento -->
             <div style="flex: 1; cursor: pointer;" onclick="window.location='{{ route('eventos.show', $event) }}'">
                 <h3 style="margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: bold; color: #333;">
@@ -94,7 +94,7 @@
                     {{ Str::limit($event->descripcion, 100) ?? 'Sin descripción disponible.' }}
                 </p>
             </div>
-            
+
             <!-- Botones de acción -->
             <div style="display: flex; gap: 1rem; flex-shrink: 0;">
                 @can('editar eventos')
