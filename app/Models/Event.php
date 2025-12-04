@@ -8,6 +8,8 @@ use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\EventRule;
+use App\Models\Requirement;
 
 
 class Event extends Model
@@ -23,6 +25,7 @@ class Event extends Model
         'direccion',
         'estado',
         'url_imagen',
+        'admin_id',
     ];
 
     public function teams(): HasMany
@@ -31,6 +34,16 @@ class Event extends Model
     }
     public function admin(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'admin_id');
+    }
+
+    public function eventRules(): HasMany
+    {
+        return $this->hasMany(EventRule::class);
+    }
+
+    public function requirements(): HasMany
+    {
+        return $this->hasMany(Requirement::class);
     }
 }
