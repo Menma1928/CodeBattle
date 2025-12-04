@@ -83,18 +83,23 @@
                     <div style="flex-shrink: 0; display: flex; align-items: center; gap: 1rem;">
                         @if(auth()->user()->hasRole('Super Admin') || $is_leader)
                         <!-- Selector de rol -->
-                        <select style="background: #6c5b7b; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; border: none; cursor: pointer;">
-                            <option value="miembro" {{ ($member->pivot->rol ?? 'Miembro') == 'Miembro' ? 'selected' : '' }}>Miembro</option>
-                            <option value="lider" {{ ($member->pivot->rol ?? '') == 'Líder' ? 'selected' : '' }}>Líder</option>
-                            <option value="desarrollador" {{ ($member->pivot->rol ?? '') == 'Desarrollador' ? 'selected' : '' }}>Desarrollador</option>
-                            <option value="disenador" {{ ($member->pivot->rol ?? '') == 'Diseñador' ? 'selected' : '' }}>Diseñador</option>
+                        <select 
+                            data-member-id="{{ $member->id }}" 
+                            data-team-id="{{ $equipo->id }}"
+                            onchange="updateMemberRole(this)"
+                            style="background: #6c5b7b; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; border: none; cursor: pointer;"
+                            {{ $member->pivot->rol === 'lider' ? 'disabled' : '' }}>
+                            <option value="miembro" {{ ($member->pivot->rol ?? 'miembro') == 'miembro' ? 'selected' : '' }}>Miembro</option>
+                            <option value="lider" {{ ($member->pivot->rol ?? '') == 'lider' ? 'selected' : '' }}>Líder</option>
+                            <option value="desarrollador" {{ ($member->pivot->rol ?? '') == 'desarrollador' ? 'selected' : '' }}>Desarrollador</option>
+                            <option value="diseñador" {{ ($member->pivot->rol ?? '') == 'diseñador' ? 'selected' : '' }}>Diseñador</option>
                         </select>
                         
                         <!-- Botón eliminar -->
                         <form method="POST" action="{{ route('equipos.removeMember', ['equipo' => $equipo, 'user' => $member]) }}" style="margin: 0;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar a este miembro del equipo?');">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" style="background: #dc3545; color: white; border: none; padding: 0.5rem 0.75rem; border-radius: 5px; cursor: pointer; font-size: 0.9rem;" title="Eliminar miembro">
+                            <button type="submit" style="background: #dc3545; color: white; border: none; padding: 0.5rem 0.75rem; border-radius: 5px; cursor: pointer; font-size: 0.9rem;" title="Eliminar miembro" {{ $member->pivot->rol === 'lider' ? 'disabled' : '' }}>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
                                     <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
@@ -104,7 +109,7 @@
                         @else
                         <!-- Solo mostrar rol sin edición -->
                         <span style="background: #6c5b7b; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold;">
-                            {{ $member->pivot->rol ?? 'Miembro' }}
+                            {{ ucfirst($member->pivot->rol ?? 'miembro') }}
                         </span>
                         @endif
                     </div>
@@ -150,4 +155,35 @@
         </div>
     </div>
 </div>
+
+<script>
+function updateMemberRole(selectElement) {
+    const memberId = selectElement.getAttribute('data-member-id');
+    const teamId = selectElement.getAttribute('data-team-id');
+    const newRole = selectElement.value;
+    
+    fetch(`/equipos/${teamId}/update-role/${memberId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ rol: newRole })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Rol actualizado correctamente');
+        } else {
+            alert(data.error || 'Error al actualizar el rol');
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al actualizar el rol');
+        location.reload();
+    });
+}
+</script>
 @endsection

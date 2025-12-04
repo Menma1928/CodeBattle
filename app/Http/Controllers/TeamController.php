@@ -87,7 +87,7 @@ class TeamController extends Controller
         $user_role_in_team = $equipo->users()->where('user_id', auth()->id())->first();
         if ($user_role_in_team) {
             $is_member = true;
-            if ($user_role_in_team->pivot->rol === 'Líder') {
+            if ($user_role_in_team->pivot->rol === 'lider') {
                 $is_leader = true;
             }
         }
@@ -124,6 +124,31 @@ class TeamController extends Controller
         
         $equipo->users()->detach(auth()->id());
         return redirect()->route('equipos.index')->with('success', 'Has abandonado el equipo.');
+    }
+
+    public function updateMemberRole(Request $request, Team $equipo, User $user){
+        // Verificar que el usuario autenticado sea Super Admin o líder del equipo
+        $is_leader = $equipo->users()->where('user_id', auth()->id())->first()?->pivot?->rol === 'lider';
+        
+        if (!auth()->user()->hasRole('Super Admin') && !$is_leader) {
+            return response()->json(['error' => 'No tienes permiso para cambiar roles.'], 403);
+        }
+        
+        // No permitir cambiar el rol del líder
+        $current_role = $equipo->users()->where('user_id', $user->id)->first()?->pivot?->rol;
+        if ($current_role === 'lider') {
+            return response()->json(['error' => 'No se puede cambiar el rol del líder.'], 403);
+        }
+        
+        // Validar el nuevo rol
+        $request->validate([
+            'rol' => 'required|in:miembro,lider,desarrollador,diseñador'
+        ]);
+        
+        // Actualizar el rol en la tabla intermedia
+        $equipo->users()->updateExistingPivot($user->id, ['rol' => $request->rol]);
+        
+        return response()->json(['success' => true, 'message' => 'Rol actualizado correctamente.']);
     }
 
 
