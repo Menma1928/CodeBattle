@@ -25,7 +25,7 @@ class EventController extends Controller
         return view('eventos.create', compact('events'));
     }
 
-    public function store(Request $request){
+    public function store(Request $request){ 
         $request->validate([
             'nombre' => 'required|string|max:255',
             'descripcion' => 'required|string|max:1000',
