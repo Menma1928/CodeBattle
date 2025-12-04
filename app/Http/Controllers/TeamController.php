@@ -34,9 +34,40 @@ class TeamController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'url_banner' => $request->url_banner,
+            'event_id' => $request->event_id,
+        ]);
+        return redirect()->route('equipos.index');
+    }
+    
+    public function edit(Team $equipo){
+        return view('equipos.edit', compact('equipo'));
+    }
+
+    public function update(Request $request, Team $equipo){
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string|max:1000',
+            'url_banner' => 'nullable|string|max:255'
+        ]);
+        $equipo->update([
+            'name' => $request->name,
+            'description' => $request->description,
+            'url_banner' => $request->url_banner,
         ]);
         return redirect()->route('equipos.index');
     }
 
+    public function destroy(Team $equipo){
+        $equipo->delete();
+        return redirect()->route('equipos.index');
+    }
+
+    public function show(Team $equipo){
+        $members = $equipo->users;
+        return view('equipos.show', compact('equipo', 'members'));
+    }
+
 
 }
+
+

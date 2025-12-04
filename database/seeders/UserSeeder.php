@@ -64,7 +64,6 @@ class UserSeeder extends Seeder
             'crear eventos',
             'ver mis eventos',
             'ver equipos',
-            'ver mis equipos',
             'expulsar miembros',
             'ver resultados',
             'ver ranking',

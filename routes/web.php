@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\TeamController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -18,8 +19,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::group(['middleware' => ['permission:ver eventos']], function(){
-        Route::get('/eventos/mis-eventos', [EventController::class, 'myEvents'])->name('eventos.misEventos');
+        Route::get('/mis-eventos', [EventController::class, 'myEvents'])->name('eventos.misEventos');
         Route::resource('eventos', EventController::class);
+    });
+    Route::group(['middleware' => ['permission:ver equipos']], function(){
+        Route::get('/mis-equipos', [TeamController::class, 'myTeams'])->name('equipos.misEquipos');
+        Route::resource('equipos', TeamController::class);
     });
 });
 
