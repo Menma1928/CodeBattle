@@ -46,8 +46,4 @@ class Event extends Model
     {
         return $this->hasMany(Requirement::class);
     }
-    public function requirements(): HasMany
-    {
-        return $this->hasMany(Requirement::class);
-    }
 }

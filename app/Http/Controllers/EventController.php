@@ -84,7 +84,8 @@ class EventController extends Controller
                 if (!empty($requisito)) {
                     Requirement::create([
                         'event_id' => $event->id,
-                        'requisito' => $requisito,
+                        'name' => $requisito,
+                        'description' => null,
                     ]);
                 }
             }

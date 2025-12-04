@@ -17,14 +17,6 @@
         <div style="margin-bottom: 1rem;"><input type="text" name="categoria" placeholder="Categoría" style="width:100%;padding:0.75rem;border-radius:8px;border:none;background:#ede9f3;font-size:1.1rem;"></div>
         <div style="margin-bottom: 1rem;"><input type="text" name="institucion" placeholder="Institución" style="width:100%;padding:0.75rem;border-radius:8px;border:none;background:#ede9f3;font-size:1.1rem;"></div>
         <div style="margin-bottom: 1rem;display:flex;gap:1rem;align-items:center;">
-            <button type="button" style="display:flex;align-items:center;gap:0.5rem;background:#ede9f3;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;box-shadow:0 1px 4px #ccc;">
-                <img src="{{ asset('icons/integrantes.png') }}" alt="Integrantes" style="width:32px;height:32px;">
-                Integrantes
-            </button>
-            <button type="button" style="display:flex;align-items:center;gap:0.5rem;background:#ede9f3;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;box-shadow:0 1px 4px #ccc;">
-                <img src="{{ asset('icons/fecha.png') }}" alt="Fecha" style="width:32px;height:32px;">
-                Fecha
-            </button>
         </div>
         <div style="margin-bottom: 1rem;"><textarea name="descripcion" placeholder="Descripción" style="width:100%;padding:0.75rem;border-radius:8px;border:none;background:#ede9f3;font-size:1.1rem;min-height:100px;"></textarea></div>
         
