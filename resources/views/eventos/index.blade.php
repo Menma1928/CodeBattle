@@ -1,129 +1,203 @@
 @extends('layouts.app')
 
 @section('content')
-<div style="background: #ede9f3; min-height: 100vh; padding: 2rem; display: flex; flex-direction: column; align-items: center;">
-    <div style="background: #6c5b7b; color: white; padding: 1rem; border-radius: 10px; margin-bottom: 2rem; width: 100%; max-width: 1200px;">
-        <h2 style="margin: 0;">
-            @hasrole('Super Admin')
-                Super Administrador
-            @elsehasrole('Administrador')
-                Administrador
-            @else
-                Participante
-            @endhasrole</h2>
-    </div>
-    <div style="width: 100%; max-width: 1200px; background: linear-gradient(180deg,#bdbdbd,#e0e0e0); border-radius: 20px; padding: 2.5rem 0; font-size: 2.5rem; color: white; font-weight: bold; box-shadow: 0 2px 8px #ccc; text-align: center; display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 2rem;">
-        {{ $title ?? 'Eventos' }}
-        <span style="margin-left: 1rem; font-size:2.5rem;">&#9651;</span>
-    </div>
-    
-    <!-- Barra de búsqueda y filtros -->
-    <div style="width: 100%; max-width: 1200px; background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <form method="GET" action="{{ route('eventos.index') }}" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-            <!-- Barra de búsqueda -->
-            <div style="flex: 1; min-width: 300px;">
-                <input type="text" name="search" placeholder="Buscar eventos..." value="{{ request('search') }}" style="width: 100%; padding: 0.75rem 1rem; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 1rem;">
+<div class="py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Page Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <x-page-title>{{ $title ?? 'Eventos' }}</x-page-title>
+                <x-badge type="purple" class="mt-2">
+                    @hasrole('Super Admin')
+                        Super Administrador
+                    @elsehasrole('Administrador')
+                        Administrador
+                    @else
+                        Participante
+                    @endhasrole
+                </x-badge>
             </div>
-            
-            <!-- Filtros de estado -->
-            <div style="display: flex; gap: 0.5rem;">
-                <button type="submit" name="estado" value="todos" style="background: {{ request('estado', 'todos') == 'todos' ? '#6c5b7b' : '#e0e0e0' }}; color: {{ request('estado', 'todos') == 'todos' ? 'white' : '#666' }}; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
-                    Todos
-                </button>
-                <button type="submit" name="estado" value="activo" style="background: {{ request('estado') == 'activo' ? '#28a745' : '#e0e0e0' }}; color: {{ request('estado') == 'activo' ? 'white' : '#666' }}; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
-                    Activos
-                </button>
-                <button type="submit" name="estado" value="finalizado" style="background: {{ request('estado') == 'finalizado' ? '#dc3545' : '#e0e0e0' }}; color: {{ request('estado') == 'finalizado' ? 'white' : '#666' }}; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
-                    Finalizados
-                </button>
-                <button type="submit" name="estado" value="proximo" style="background: {{ request('estado') == 'proximo' ? '#ffc107' : '#e0e0e0' }}; color: {{ request('estado') == 'proximo' ? 'white' : '#666' }}; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
-                    Próximos
-                </button>
-            </div>
-            
-            <!-- Botón de búsqueda -->
-            <button type="submit" style="background: #6c5b7b; color: white; border: none; padding: 0.75rem 2rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
-                Buscar
-            </button>
-            
-            @if(request('search') || request('estado'))
-            <a href="{{ route('eventos.index') }}" style="text-decoration: none;">
-                <button type="button" style="background: #dc3545; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
-                    Limpiar
-                </button>
-            </a>
-            @endif
-        </form>
-    </div>
-    
-    <!-- Lista de eventos -->
-    <div style="width: 100%; max-width: 1200px;">
-        @forelse($events as $event)
-        <div style="background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 1.5rem;">
-            <!-- Logo del evento -->
-            <a href="{{ route('eventos.show', $event) }}" style="text-decoration: none; flex-shrink: 0;">
-                @if($event->url_imagen)
-                    <img src="{{ $event->url_imagen }}" alt="{{ $event->nombre }}" style="width: 80px; height: 80px; border-radius: 10px; object-fit: cover; cursor: pointer;">
-                @else
-                    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: bold; cursor: pointer;">
-                        {{ substr($event->nombre, 0, 1) }}
+        </div>
+
+        <!-- Search and Filters -->
+        <x-card class="mb-6">
+            <form method="GET" action="{{ route('eventos.index') }}" class="space-y-4">
+                <!-- Search Bar -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <x-text-input
+                            name="search"
+                            type="text"
+                            class="w-full"
+                            placeholder="Buscar eventos por nombre, descripción o ubicación..."
+                            value="{{ request('search') }}"
+                        />
                     </div>
-                @endif
-            </a>
+                    <div class="flex gap-2">
+                        <x-primary-button type="submit">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            Buscar
+                        </x-primary-button>
+                        @if(request('search') || request('estado'))
+                        <a href="{{ route('eventos.index') }}">
+                            <x-secondary-button type="button">
+                                Limpiar
+                            </x-secondary-button>
+                        </a>
+                        @endif
+                    </div>
+                </div>
 
-            <!-- Información del evento -->
-            <div style="flex: 1; cursor: pointer;" onclick="window.location='{{ route('eventos.show', $event) }}'">
-                <h3 style="margin: 0 0 0.5rem 0; font-size: 1.5rem; font-weight: bold; color: #333;">
-                    {{ $event->nombre }}
-                </h3>
-                <p style="margin: 0 0 0.5rem 0; color: #666; font-size: 0.9rem;">
-                    <strong>Estado:</strong> <span style="background: {{ $event->estado === 'activo' ? '#28a745' : ($event->estado === 'finalizado' ? '#dc3545' : '#ffc107') }}; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.8rem;">{{ ucfirst($event->estado) }}</span>
-                </p>
-                <p style="margin: 0 0 0.25rem 0; color: #666; font-size: 0.9rem;">
-                    <strong>Inicio:</strong> {{ \Carbon\Carbon::parse($event->fecha_inicio)->format('d/m/Y H:i') }}
-                    @if($event->fecha_fin)
-                        | <strong>Fin:</strong> {{ \Carbon\Carbon::parse($event->fecha_fin)->format('d/m/Y H:i') }}
-                    @endif
-                </p>
-                @if($event->direccion)
-                <p style="margin: 0 0 0.25rem 0; color: #666; font-size: 0.9rem;">
-                    <strong>Ubicación:</strong> {{ $event->direccion }}
-                </p>
-                @endif
-                <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">
-                    {{ Str::limit($event->descripcion, 100) ?? 'Sin descripción disponible.' }}
-                </p>
-            </div>
+                <!-- Status Filters -->
+                <div class="flex flex-wrap gap-2">
+                    <button type="submit" name="estado" value="todos" class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ request('estado', 'todos') == 'todos' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                        Todos
+                    </button>
+                    <button type="submit" name="estado" value="activo" class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ request('estado') == 'activo' ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                        Activos
+                    </button>
+                    <button type="submit" name="estado" value="finalizado" class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ request('estado') == 'finalizado' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                        Finalizados
+                    </button>
+                    <button type="submit" name="estado" value="proximo" class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ request('estado') == 'proximo' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                        Próximos
+                    </button>
+                </div>
+            </form>
+        </x-card>
 
-            <!-- Botones de acción -->
-            <div style="display: flex; gap: 1rem; flex-shrink: 0;">
-                @can('editar eventos')
-                <a href="{{ route('eventos.edit', $event) }}" style="text-decoration: none;">
-                    <button style="background: #6c5b7b; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
-                        Editar
-                    </button>
-                </a>
-                @endcan
-                @can('eliminar eventos')
-                <form method="POST" action="{{ route('eventos.destroy', $event) }}" style="margin: 0;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este evento?');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" style="background: #dc3545; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
-                        Eliminar
-                    </button>
-                </form>
-                @endcan
-                <button onclick="window.location='{{ route('eventos.show', $event) }}'" style="background: white; border: 2px solid #333; padding: 0.75rem 1.5rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
-                    Ingresar
-                </button>
-            </div>
+        <!-- Events List -->
+        <div class="space-y-4">
+            @forelse($events as $event)
+            <x-card hover="true" class="group">
+                <div class="flex flex-col sm:flex-row gap-6">
+                    <!-- Event Logo/Image -->
+                    <a href="{{ route('eventos.show', $event) }}" class="flex-shrink-0">
+                        @if($event->url_imagen)
+                            <img src="{{ $event->url_imagen }}" alt="{{ $event->nombre }}" class="w-24 h-24 rounded-xl object-cover group-hover:scale-105 transition-transform duration-200">
+                        @else
+                            <div class="w-24 h-24 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center text-white text-3xl font-bold group-hover:scale-105 transition-transform duration-200">
+                                {{ substr($event->nombre, 0, 1) }}
+                            </div>
+                        @endif
+                    </a>
+
+                    <!-- Event Information -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-start justify-between gap-4 mb-3">
+                            <div class="flex-1">
+                                <a href="{{ route('eventos.show', $event) }}" class="block group-hover:text-purple-600 transition-colors">
+                                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                                        {{ $event->nombre }}
+                                    </h3>
+                                </a>
+                                <div class="flex flex-wrap items-center gap-2 mb-2">
+                                    @php
+                                        $badgeType = $event->estado === 'activo' ? 'success' : ($event->estado === 'finalizado' ? 'error' : 'warning');
+                                    @endphp
+                                    <x-badge :type="$badgeType">
+                                        {{ ucfirst($event->estado) }}
+                                    </x-badge>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons (Desktop) -->
+                            <div class="hidden sm:flex gap-2 flex-shrink-0">
+                                @can('editar eventos')
+                                <a href="{{ route('eventos.edit', $event) }}">
+                                    <x-secondary-button>
+                                        Editar
+                                    </x-secondary-button>
+                                </a>
+                                @endcan
+                                @can('eliminar eventos')
+                                <form method="POST" action="{{ route('eventos.destroy', $event) }}" class="inline" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este evento?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <x-danger-button type="submit">
+                                        Eliminar
+                                    </x-danger-button>
+                                </form>
+                                @endcan
+                                <a href="{{ route('eventos.show', $event) }}">
+                                    <x-primary-button>
+                                        Ver Detalles
+                                    </x-primary-button>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <span>
+                                    <strong>Inicio:</strong> {{ $event->fecha_inicio->format('d/m/Y H:i') }}
+                                    @if($event->fecha_fin)
+                                        | <strong>Fin:</strong> {{ $event->fecha_fin->format('d/m/Y H:i') }}
+                                    @endif
+                                </span>
+                            </div>
+
+                            @if($event->direccion)
+                            <div class="flex items-center gap-2">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                <span><strong>Ubicación:</strong> {{ $event->direccion }}</span>
+                            </div>
+                            @endif
+
+                            <p class="mt-2 text-gray-700 dark:text-gray-300 line-clamp-2">
+                                {{ $event->descripcion ?? 'Sin descripción disponible.' }}
+                            </p>
+                        </div>
+
+                        <!-- Action Buttons (Mobile) -->
+                        <div class="flex sm:hidden gap-2 mt-4 flex-wrap">
+                            @can('editar eventos')
+                            <a href="{{ route('eventos.edit', $event) }}">
+                                <x-secondary-button class="w-full">
+                                    Editar
+                                </x-secondary-button>
+                            </a>
+                            @endcan
+                            @can('eliminar eventos')
+                            <form method="POST" action="{{ route('eventos.destroy', $event) }}" class="flex-1" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este evento?');">
+                                @csrf
+                                @method('DELETE')
+                                <x-danger-button type="submit" class="w-full">
+                                    Eliminar
+                                </x-danger-button>
+                            </form>
+                            @endcan
+                            <a href="{{ route('eventos.show', $event) }}" class="flex-1">
+                                <x-primary-button class="w-full">
+                                    Ver Detalles
+                                </x-primary-button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </x-card>
+            @empty
+            <x-card>
+                <x-empty-state
+                    title="No hay eventos disponibles"
+                    message="No se encontraron eventos que coincidan con tu búsqueda. Intenta con otros filtros."
+                />
+            </x-card>
+            @endforelse
         </div>
-        @empty
-        <div style="background: white; border-radius: 10px; padding: 3rem; text-align: center; color: #666;">
-            <p style="font-size: 1.2rem; margin: 0;">No hay eventos disponibles</p>
+
+        <!-- Pagination -->
+        <div class="mt-6">
+            {{ $events->links() }}
         </div>
-        @endforelse
     </div>
-    {{ $events->links() }}
 </div>
 @endsection

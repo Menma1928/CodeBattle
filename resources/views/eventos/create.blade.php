@@ -1,52 +1,217 @@
 @extends('layouts.app')
 
 @section('content')
-<div style="background: #ede9f3; min-height: 100vh; padding: 2rem;">
-    <div style="background: #6c5b7b; color: white; padding: 1rem; border-radius: 10px; margin-bottom: 2rem; max-width: 900px;">
-        <h2 style="margin: 0;">Crear Evento</h2>
+<div class="py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center gap-4 mb-4">
+                <a href="{{ route('eventos.index') }}" class="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                </a>
+                <x-page-title>Crear Nuevo Evento</x-page-title>
+            </div>
+            <p class="text-gray-600 dark:text-gray-400 ml-10">Complete la información para crear un nuevo evento de CodeBattle</p>
+        </div>
+
+        <form method="POST" action="{{ route('eventos.store') }}" class="space-y-6">
+            @csrf
+
+            <!-- Basic Information Card -->
+            <x-card>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Información Básica</h3>
+
+                <div class="space-y-6">
+                    <!-- Nombre -->
+                    <div>
+                        <x-input-label for="nombre" value="Nombre del Evento *" />
+                        <x-text-input
+                            id="nombre"
+                            name="nombre"
+                            type="text"
+                            class="mt-1 block w-full"
+                            :value="old('nombre')"
+                            required
+                            autofocus
+                            placeholder="Ej: CodeBattle 2025"
+                        />
+                        <x-input-error :messages="$errors->get('nombre')" class="mt-2" />
+                    </div>
+
+                    <!-- Descripción -->
+                    <div>
+                        <x-input-label for="descripcion" value="Descripción *" />
+                        <textarea
+                            id="descripcion"
+                            name="descripcion"
+                            rows="4"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-purple-500 dark:focus:border-purple-600 focus:ring-purple-500 dark:focus:ring-purple-600 rounded-lg shadow-sm"
+                            required
+                            placeholder="Describe el evento, objetivos y detalles importantes..."
+                        >{{ old('descripcion') }}</textarea>
+                        <x-input-error :messages="$errors->get('descripcion')" class="mt-2" />
+                    </div>
+
+                    <!-- URL Imagen -->
+                    <div>
+                        <x-input-label for="url_imagen" value="URL de la Imagen" />
+                        <x-text-input
+                            id="url_imagen"
+                            name="url_imagen"
+                            type="url"
+                            class="mt-1 block w-full"
+                            :value="old('url_imagen')"
+                            placeholder="https://ejemplo.com/imagen.jpg"
+                        />
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Opcional: URL de la imagen principal del evento</p>
+                        <x-input-error :messages="$errors->get('url_imagen')" class="mt-2" />
+                    </div>
+                </div>
+            </x-card>
+
+            <!-- Date and Location Card -->
+            <x-card>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Fecha y Ubicación</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Fecha Inicio -->
+                    <div>
+                        <x-input-label for="fecha_inicio" value="Fecha de Inicio *" />
+                        <x-text-input
+                            id="fecha_inicio"
+                            name="fecha_inicio"
+                            type="datetime-local"
+                            class="mt-1 block w-full"
+                            :value="old('fecha_inicio')"
+                            required
+                        />
+                        <x-input-error :messages="$errors->get('fecha_inicio')" class="mt-2" />
+                    </div>
+
+                    <!-- Fecha Fin -->
+                    <div>
+                        <x-input-label for="fecha_fin" value="Fecha de Fin" />
+                        <x-text-input
+                            id="fecha_fin"
+                            name="fecha_fin"
+                            type="datetime-local"
+                            class="mt-1 block w-full"
+                            :value="old('fecha_fin')"
+                        />
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Opcional</p>
+                        <x-input-error :messages="$errors->get('fecha_fin')" class="mt-2" />
+                    </div>
+
+                    <!-- Dirección -->
+                    <div class="md:col-span-2">
+                        <x-input-label for="direccion" value="Dirección / Ubicación" />
+                        <x-text-input
+                            id="direccion"
+                            name="direccion"
+                            type="text"
+                            class="mt-1 block w-full"
+                            :value="old('direccion')"
+                            placeholder="Ej: Auditorio Principal, Campus Central"
+                        />
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Opcional: Ubicación física o enlace virtual</p>
+                        <x-input-error :messages="$errors->get('direccion')" class="mt-2" />
+                    </div>
+
+                    <!-- Estado -->
+                    <div class="md:col-span-2">
+                        <x-input-label for="estado" value="Estado del Evento *" />
+                        <select
+                            id="estado"
+                            name="estado"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-purple-500 dark:focus:border-purple-600 focus:ring-purple-500 dark:focus:ring-purple-600 rounded-lg shadow-sm"
+                            required
+                        >
+                            <option value="">Seleccione un estado</option>
+                            <option value="pendiente" {{ old('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                            <option value="activo" {{ old('estado') == 'activo' ? 'selected' : '' }}>Activo</option>
+                            <option value="finalizado" {{ old('estado') == 'finalizado' ? 'selected' : '' }}>Finalizado</option>
+                        </select>
+                        <x-input-error :messages="$errors->get('estado')" class="mt-2" />
+                    </div>
+                </div>
+            </x-card>
+
+            <!-- Reglas Card -->
+            <x-card>
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Reglas del Evento</h3>
+                    <button
+                        type="button"
+                        onclick="addRegla()"
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-colors"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Agregar Regla
+                    </button>
+                </div>
+
+                <div id="reglas-container" class="space-y-3">
+                    <div class="flex gap-2">
+                        <x-text-input
+                            type="text"
+                            name="reglas[]"
+                            class="flex-1"
+                            placeholder="Escribe una regla del evento..."
+                        />
+                    </div>
+                </div>
+                <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">Opcional: Define las reglas que los participantes deben seguir</p>
+            </x-card>
+
+            <!-- Requisitos Card -->
+            <x-card>
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Requisitos del Evento</h3>
+                    <button
+                        type="button"
+                        onclick="addRequisito()"
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold text-sm transition-colors"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Agregar Requisito
+                    </button>
+                </div>
+
+                <div id="requisitos-container" class="space-y-3">
+                    <div class="flex gap-2">
+                        <x-text-input
+                            type="text"
+                            name="requisitos[]"
+                            class="flex-1"
+                            placeholder="Escribe un requisito para participar..."
+                        />
+                    </div>
+                </div>
+                <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">Opcional: Define los requisitos que deben cumplir los equipos</p>
+            </x-card>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-end">
+                <a href="{{ route('eventos.index') }}">
+                    <x-secondary-button type="button" class="w-full sm:w-auto">
+                        Cancelar
+                    </x-secondary-button>
+                </a>
+                <x-primary-button type="submit" class="w-full sm:w-auto">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Crear Evento
+                </x-primary-button>
+            </div>
+        </form>
     </div>
-    <form style="background: linear-gradient(180deg,#bdbdf3,#bdbdbd); border-radius: 20px; padding: 2rem; max-width: 700px; margin: auto; box-shadow: 0 2px 8px #ccc;">
-        <div style="display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem;">
-            <img src="{{ asset('icons/logo-placeholder.png') }}" alt="Logo" style="width:80px;height:80px;object-fit:contain;opacity:0.5;">
-            <div>
-                <label style="font-weight:bold;">Logo</label><br>
-                <button type="button" style="background:#ede9f3;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;box-shadow:0 1px 4px #ccc;">Subir imagen</button>
-            </div>
-        </div>
-        <div style="margin-bottom: 1rem;"><input type="text" name="nombre" placeholder="Nombre" style="width:100%;padding:0.75rem;border-radius:8px;border:none;background:#ede9f3;font-size:1.1rem;"></div>
-        <div style="margin-bottom: 1rem;"><input type="text" name="categoria" placeholder="Categoría" style="width:100%;padding:0.75rem;border-radius:8px;border:none;background:#ede9f3;font-size:1.1rem;"></div>
-        <div style="margin-bottom: 1rem;"><input type="text" name="institucion" placeholder="Institución" style="width:100%;padding:0.75rem;border-radius:8px;border:none;background:#ede9f3;font-size:1.1rem;"></div>
-        <div style="margin-bottom: 1rem;display:flex;gap:1rem;align-items:center;">
-        </div>
-        <div style="margin-bottom: 1rem;"><textarea name="descripcion" placeholder="Descripción" style="width:100%;padding:0.75rem;border-radius:8px;border:none;background:#ede9f3;font-size:1.1rem;min-height:100px;"></textarea></div>
-        
-        <!-- Sección de Reglas -->
-        <div style="margin-bottom: 2rem;">
-            <h3 style="color: #6c5b7b; margin-bottom: 1rem;">Reglas del Evento</h3>
-            <div id="reglas-container">
-                <div style="margin-bottom: 0.5rem;">
-                    <input type="text" name="reglas[]" placeholder="Escribe una regla" style="width:100%;padding:0.75rem;border-radius:8px;border:none;background:#ede9f3;font-size:1rem;">
-                </div>
-            </div>
-            <button type="button" onclick="addRegla()" style="background:#6c5b7b;color:white;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;margin-top:0.5rem;">+ Agregar Regla</button>
-        </div>
-        
-        <!-- Sección de Requisitos -->
-        <div style="margin-bottom: 2rem;">
-            <h3 style="color: #6c5b7b; margin-bottom: 1rem;">Requisitos del Evento</h3>
-            <div id="requisitos-container">
-                <div style="margin-bottom: 0.5rem;">
-                    <input type="text" name="requisitos[]" placeholder="Escribe un requisito" style="width:100%;padding:0.75rem;border-radius:8px;border:none;background:#ede9f3;font-size:1rem;">
-                </div>
-            </div>
-            <button type="button" onclick="addRequisito()" style="background:#6c5b7b;color:white;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;margin-top:0.5rem;">+ Agregar Requisito</button>
-        </div>
-        
-        <div style="display:flex;gap:1rem;justify-content:flex-end;">
-            <button type="submit" style="background:#fff;border:none;padding:0.5rem 1.5rem;border-radius:8px;box-shadow:0 1px 4px #ccc;cursor:pointer;">Crear</button>
-            <button type="reset" style="background:#fff;border:none;padding:0.5rem 1.5rem;border-radius:8px;box-shadow:0 1px 4px #ccc;cursor:pointer;">Limpiar</button>
-        </div>
-    </form>
 </div>
 @endsection
 
@@ -55,10 +220,24 @@
 function addRegla() {
     const container = document.getElementById('reglas-container');
     const div = document.createElement('div');
-    div.style.marginBottom = '0.5rem';
+    div.className = 'flex gap-2';
     div.innerHTML = `
-        <input type="text" name="reglas[]" placeholder="Escribe una regla" style="width:100%;padding:0.75rem;border-radius:8px;border:none;background:#ede9f3;font-size:1rem;">
-        <button type="button" onclick="this.parentElement.remove()" style="background:#ff6b6b;color:white;border:none;padding:0.25rem 0.5rem;border-radius:4px;cursor:pointer;margin-left:0.5rem;">×</button>
+        <input
+            type="text"
+            name="reglas[]"
+            placeholder="Escribe una regla del evento..."
+            class="flex-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-purple-500 dark:focus:border-purple-600 focus:ring-purple-500 dark:focus:ring-purple-600 rounded-lg shadow-sm"
+        />
+        <button
+            type="button"
+            onclick="this.parentElement.remove()"
+            class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex-shrink-0"
+            title="Eliminar regla"
+        >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
     `;
     container.appendChild(div);
 }
@@ -66,10 +245,24 @@ function addRegla() {
 function addRequisito() {
     const container = document.getElementById('requisitos-container');
     const div = document.createElement('div');
-    div.style.marginBottom = '0.5rem';
+    div.className = 'flex gap-2';
     div.innerHTML = `
-        <input type="text" name="requisitos[]" placeholder="Escribe un requisito" style="width:100%;padding:0.75rem;border-radius:8px;border:none;background:#ede9f3;font-size:1rem;">
-        <button type="button" onclick="this.parentElement.remove()" style="background:#ff6b6b;color:white;border:none;padding:0.25rem 0.5rem;border-radius:4px;cursor:pointer;margin-left:0.5rem;">×</button>
+        <input
+            type="text"
+            name="requisitos[]"
+            placeholder="Escribe un requisito para participar..."
+            class="flex-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-purple-500 dark:focus:border-purple-600 focus:ring-purple-500 dark:focus:ring-purple-600 rounded-lg shadow-sm"
+        />
+        <button
+            type="button"
+            onclick="this.parentElement.remove()"
+            class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex-shrink-0"
+            title="Eliminar requisito"
+        >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
     `;
     container.appendChild(div);
 }

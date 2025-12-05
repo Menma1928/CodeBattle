@@ -106,6 +106,34 @@ class EventController extends Controller
             'estado' => $request->estado,
             'url_imagen' => $request->url_imagen,
         ]);
+
+        // Actualizar reglas: eliminar las existentes y crear las nuevas
+        $evento->eventRules()->delete();
+        if ($request->has('reglas')) {
+            foreach ($request->reglas as $regla) {
+                if (!empty($regla)) {
+                    EventRule::create([
+                        'event_id' => $evento->id,
+                        'regla' => $regla,
+                    ]);
+                }
+            }
+        }
+
+        // Actualizar requisitos: eliminar los existentes y crear los nuevos
+        $evento->requirements()->delete();
+        if ($request->has('requisitos')) {
+            foreach ($request->requisitos as $requisito) {
+                if (!empty($requisito)) {
+                    Requirement::create([
+                        'event_id' => $evento->id,
+                        'name' => $requisito,
+                        'description' => null,
+                    ]);
+                }
+            }
+        }
+
         return redirect()->route('eventos.index');
     }
 

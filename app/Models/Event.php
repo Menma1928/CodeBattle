@@ -29,6 +29,16 @@ class Event extends Model
         'admin_id',
     ];
 
+    /**
+     * Los atributos que deben ser casteados a tipos nativos.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'fecha_inicio' => 'datetime',
+        'fecha_fin' => 'datetime',
+    ];
+
     public function teams(): HasMany
     {
         return $this->hasMany(Team::class);

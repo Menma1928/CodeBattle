@@ -1,157 +1,188 @@
 @extends('layouts.app')
 
 @section('content')
-<div style="background: white; min-height: 100vh;">
-    <!-- Header morado -->
-    <div style="background: #6c5b7b; padding: 1rem; display: flex; align-items: center; gap: 1rem;">
-        <a href="{{ route('equipos.index') }}" style="color: white; text-decoration: none; font-size: 1.5rem;">
-            &#8592;
-        </a>
-        <span style="color: white; font-size: 1.2rem; font-weight: bold;">{{ $equipo->nombre ?? 'Nombre del Equipo' }}</span>
-    </div>
-
-    <div style="padding: 2rem; max-width: 900px; margin: 0 auto;">
-        <!-- Información del equipo -->
-        <div style="background: white; border-radius: 10px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 2rem;">
-            <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
-                <!-- Banner del equipo -->
-                <div style="flex-shrink: 0;">
-                    @if($equipo->url_banner)
-                        <img src="{{ $equipo->url_banner }}" alt="{{ $equipo->nombre }}" style="width: 150px; height: 150px; border-radius: 10px; object-fit: cover;">
-                    @else
-                        <div style="width: 150px; height: 150px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 4rem; font-weight: bold;">
-                            {{ substr($equipo->nombre ?? 'E', 0, 1) }}
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Detalles del equipo -->
-                <div style="flex: 1;">
-                    <h1 style="font-size: 2rem; font-weight: bold; margin: 0 0 0.5rem 0; color: #333;">
-                        {{ $equipo->nombre }}
-                    </h1>
-                    
-                    <p style="margin: 0 0 0.5rem 0; color: #666;">
-                        <strong>Evento:</strong> 
-                        <a href="{{ route('eventos.show', $equipo->event) }}" style="color: #6c5b7b; text-decoration: none; font-weight: bold;">
-                            {{ $equipo->event->nombre }}
-                        </a>
-                    </p>
-                    
-                    @if($equipo->posicion)
-                    <p style="margin: 0 0 1rem 0; color: #666;">
-                        <strong>Posición:</strong> <span style="background: #ffc107; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem;">#{{ $equipo->posicion }}</span>
-                    </p>
-                    @endif
-                    
-                    <p style="color: #666; margin: 1rem 0 0 0; line-height: 1.6;">
-                        <strong>Descripción:</strong><br>
-                        {{ $equipo->descripcion ?? 'Sin descripción disponible.' }}
-                    </p>
-                </div>
+<div class="min-h-screen">
+    <!-- Header with Back Button -->
+    <div class="bg-gradient-to-r from-pink-600 to-purple-600 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center gap-4">
+                <a href="{{ route('equipos.index') }}" class="text-white hover:text-pink-200 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                </a>
+                <h1 class="text-2xl font-bold text-white">{{ $equipo->nombre }}</h1>
             </div>
         </div>
+    </div>
 
-        <!-- Sección de miembros del equipo -->
-        <div style="margin-top: 2rem;">
-            <h2 style="font-size: 1.8rem; font-weight: bold; color: #333; margin-bottom: 1.5rem;">
-                Miembros del Equipo ({{ $equipo->users->count() }}/5)
-            </h2>
-            
-            <div style="background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
-                @forelse($equipo->users as $index => $member)
-                <div style="padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem; {{ $index > 0 ? 'border-top: 1px solid #e0e0e0;' : '' }}">
-                    <!-- Avatar -->
-                    <div style="flex-shrink: 0; width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: bold;">
-                        {{ substr($member->name, 0, 1) }}
-                    </div>
-                    
-                    <!-- Información del miembro -->
-                    <div style="flex: 1;">
-                        <h3 style="font-size: 1.1rem; font-weight: bold; color: #333; margin: 0 0 0.25rem 0;">
-                            {{ $member->name }}
-                            @if($member->id == auth()->id())
-                            <span style="color: #6c5b7b;">(Tú)</span>
-                            @endif
-                        </h3>
-                        <p style="color: #666; font-size: 0.9rem; margin: 0;">
-                            {{ $member->email }}
-                        </p>
-                    </div>
-                    
-                    <!-- Rol y acciones -->
-                    <div style="flex-shrink: 0; display: flex; align-items: center; gap: 1rem;">
-                        @if(auth()->user()->hasRole('Super Admin') || $is_leader)
-                        <!-- Selector de rol -->
-                        <select 
-                            data-member-id="{{ $member->id }}" 
-                            data-team-id="{{ $equipo->id }}"
-                            onchange="updateMemberRole(this)"
-                            style="background: #6c5b7b; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; border: none; cursor: pointer;"
-                            {{ $member->pivot->rol === 'lider' ? 'disabled' : '' }}>
-                            <option value="miembro" {{ ($member->pivot->rol ?? 'miembro') == 'miembro' ? 'selected' : '' }}>Miembro</option>
-                            <option value="lider" {{ ($member->pivot->rol ?? '') == 'lider' ? 'selected' : '' }}>Líder</option>
-                            <option value="desarrollador" {{ ($member->pivot->rol ?? '') == 'desarrollador' ? 'selected' : '' }}>Desarrollador</option>
-                            <option value="diseñador" {{ ($member->pivot->rol ?? '') == 'diseñador' ? 'selected' : '' }}>Diseñador</option>
-                        </select>
-                        
-                        <!-- Botón eliminar -->
-                        <form method="POST" action="{{ route('equipos.removeMember', ['equipo' => $equipo, 'user' => $member]) }}" style="margin: 0;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar a este miembro del equipo?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" style="background: #dc3545; color: white; border: none; padding: 0.5rem 0.75rem; border-radius: 5px; cursor: pointer; font-size: 0.9rem;" title="Eliminar miembro" {{ $member->pivot->rol === 'lider' ? 'disabled' : '' }}>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-                                </svg>
-                            </button>
-                        </form>
+    <div class="py-8 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <!-- Team Information Card -->
+            <x-card class="mb-6">
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Team Banner -->
+                    <div class="flex-shrink-0">
+                        @if($equipo->url_banner)
+                            <img src="{{ $equipo->url_banner }}" alt="{{ $equipo->nombre }}" class="w-40 h-40 rounded-xl object-cover shadow-md">
                         @else
-                        <!-- Solo mostrar rol sin edición -->
-                        <span style="background: #6c5b7b; color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold;">
-                            {{ ucfirst($member->pivot->rol ?? 'miembro') }}
-                        </span>
+                            <div class="w-40 h-40 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center text-white text-6xl font-bold shadow-md">
+                                {{ substr($equipo->nombre ?? 'E', 0, 1) }}
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Team Details -->
+                    <div class="flex-1">
+                        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                            {{ $equipo->nombre }}
+                        </h2>
+
+                        <div class="space-y-3 mb-4">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <span class="text-gray-700 dark:text-gray-300">
+                                    <strong>Evento:</strong>
+                                    <a href="{{ route('eventos.show', $equipo->event) }}" class="text-purple-600 dark:text-purple-400 hover:underline font-semibold">
+                                        {{ $equipo->event->nombre }}
+                                    </a>
+                                </span>
+                            </div>
+
+                            @if($equipo->posicion)
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                                </svg>
+                                <x-badge type="warning" size="lg">
+                                    Posición #{{ $equipo->posicion }}
+                                </x-badge>
+                            </div>
+                            @endif
+                        </div>
+
+                        @if($equipo->descripcion)
+                        <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Descripción</p>
+                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed">{{ $equipo->descripcion }}</p>
+                        </div>
                         @endif
                     </div>
                 </div>
-                @empty
-                <div style="padding: 3rem; text-align: center; color: #999;">
-                    <p style="font-size: 1.1rem; margin: 0;">No hay miembros en este equipo aún.</p>
-                </div>
-                @endforelse
-            </div>
-        </div>
+            </x-card>
 
-        <!-- Botones de acción del equipo -->
-        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
-            @if(auth()->user()->hasRole('Super Admin') || $is_leader)
-            <a href="{{ route('equipos.edit', $equipo) }}" style="text-decoration: none;">
-                <button style="background: #6c5b7b; color: white; border: none; padding: 0.75rem 2rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
-                    Editar Equipo
-                </button>
-            </a>
-            
-            <form method="POST" action="{{ route('equipos.destroy', $equipo) }}" style="margin: 0;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este equipo?');">
-                @csrf
-                @method('DELETE')
-                <button type="submit" style="background: #dc3545; color: white; border: none; padding: 0.75rem 2rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
-                    Eliminar Equipo
-                </button>
-            </form>
-            @elseif($is_member && !$is_leader)
-            <!-- Botón para abandonar el equipo -->
-            <form method="POST" action="{{ route('equipos.leave', $equipo) }}" style="margin: 0;" onsubmit="return confirm('¿Estás seguro de que deseas abandonar este equipo?');">
-                @csrf
-                @method('DELETE')
-                <button type="submit" style="background: #ffc107; color: white; border: none; padding: 0.75rem 2rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
-                    Abandonar Equipo
-                </button>
-            </form>
-            @elseif(!$is_member && auth()->user()->hasRole('Participante') && $equipo->users->count() < 5 )
-            <button onclick="alert('Funcionalidad en desarrollo')" style="background: #28a745; color: white; border: none; padding: 0.75rem 2rem; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem;">
-                Solicitar Unirme
-            </button>
-            @endif
+            <!-- Team Members Section -->
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                    Miembros del Equipo ({{ $equipo->users->count() }}/5)
+                </h2>
+
+                <x-card :padding="false">
+                    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @forelse($equipo->users as $member)
+                        <div class="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                <!-- Avatar and Info -->
+                                <div class="flex items-center gap-4 flex-1">
+                                    <x-avatar :name="$member->name" size="xl" />
+
+                                    <div class="flex-1">
+                                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+                                            {{ $member->name }}
+                                            @if($member->id == auth()->id())
+                                            <span class="text-purple-600 dark:text-purple-400">(Tú)</span>
+                                            @endif
+                                        </h3>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ $member->email }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Role Selector and Actions -->
+                                <div class="flex items-center gap-3 w-full sm:w-auto">
+                                    @if(auth()->user()->hasRole('Super Admin') || $is_leader)
+                                        <!-- Role Selector -->
+                                        <select
+                                            data-member-id="{{ $member->id }}"
+                                            data-team-id="{{ $equipo->id }}"
+                                            onchange="updateMemberRole(this)"
+                                            class="flex-1 sm:flex-none px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-sm transition-colors border-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                            {{ $member->pivot->rol === 'lider' ? 'disabled' : '' }}>
+                                            <option value="miembro" {{ ($member->pivot->rol ?? 'miembro') == 'miembro' ? 'selected' : '' }}>Miembro</option>
+                                            <option value="lider" {{ ($member->pivot->rol ?? '') == 'lider' ? 'selected' : '' }}>Líder</option>
+                                            <option value="desarrollador" {{ ($member->pivot->rol ?? '') == 'desarrollador' ? 'selected' : '' }}>Desarrollador</option>
+                                            <option value="diseñador" {{ ($member->pivot->rol ?? '') == 'diseñador' ? 'selected' : '' }}>Diseñador</option>
+                                        </select>
+
+                                        <!-- Remove Button -->
+                                        <form method="POST" action="{{ route('equipos.removeMember', ['equipo' => $equipo, 'user' => $member]) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar a este miembro del equipo?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button
+                                                type="submit"
+                                                class="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                title="Eliminar miembro"
+                                                {{ $member->pivot->rol === 'lider' ? 'disabled' : '' }}>
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <!-- Read-only Role Badge -->
+                                        <x-badge type="purple" size="lg">
+                                            {{ ucfirst($member->pivot->rol ?? 'miembro') }}
+                                        </x-badge>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="p-12 text-center">
+                            <x-empty-state
+                                title="No hay miembros"
+                                message="Este equipo aún no tiene miembros."
+                            />
+                        </div>
+                        @endforelse
+                    </div>
+                </x-card>
+            </div>
+
+            <!-- Team Action Buttons -->
+            <div class="mt-8 flex flex-wrap gap-4 justify-center">
+                @if(auth()->user()->hasRole('Super Admin') || $is_leader)
+                    <a href="{{ route('equipos.edit', $equipo) }}">
+                        <x-secondary-button class="px-8">
+                            Editar Equipo
+                        </x-secondary-button>
+                    </a>
+
+                    <form method="POST" action="{{ route('equipos.destroy', $equipo) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este equipo?');">
+                        @csrf
+                        @method('DELETE')
+                        <x-danger-button type="submit" class="px-8">
+                            Eliminar Equipo
+                        </x-danger-button>
+                    </form>
+
+                @elseif($is_member && !$is_leader)
+                    <!-- Leave Team Button -->
+                    <form method="POST" action="{{ route('equipos.leave', $equipo) }}" onsubmit="return confirm('¿Estás seguro de que deseas abandonar este equipo?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="inline-flex items-center px-8 py-2 bg-amber-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-amber-700 focus:bg-amber-700 active:bg-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                            Abandonar Equipo
+                        </button>
+                    </form>
+
+                @elseif(!$is_member && auth()->user()->hasRole('Participante') && $equipo->users->count() < 5)
+                    <button onclick="alert('Funcionalidad en desarrollo')" class="inline-flex items-center px-8 py-2 bg-emerald-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 focus:bg-emerald-700 active:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        Solicitar Unirme
+                    </button>
+                @endif
+            </div>
         </div>
     </div>
 </div>
@@ -161,7 +192,7 @@ function updateMemberRole(selectElement) {
     const memberId = selectElement.getAttribute('data-member-id');
     const teamId = selectElement.getAttribute('data-team-id');
     const newRole = selectElement.value;
-    
+
     fetch(`/equipos/${teamId}/update-role/${memberId}`, {
         method: 'POST',
         headers: {
@@ -173,7 +204,12 @@ function updateMemberRole(selectElement) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Rol actualizado correctamente');
+            // Show success message with Tailwind styling
+            const message = document.createElement('div');
+            message.className = 'fixed top-4 right-4 bg-emerald-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            message.textContent = 'Rol actualizado correctamente';
+            document.body.appendChild(message);
+            setTimeout(() => message.remove(), 3000);
         } else {
             alert(data.error || 'Error al actualizar el rol');
             location.reload();

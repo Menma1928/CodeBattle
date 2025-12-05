@@ -27,6 +27,10 @@ class EventUpdateRequest extends FormRequest
             'direccion' => 'required|string|max:255',
             'estado' => 'required|string|in:pendiente,activo,finalizado',
             'url_imagen' => 'nullable|url|max:255',
+            'reglas' => 'nullable|array',
+            'reglas.*' => 'nullable|string|max:500',
+            'requisitos' => 'nullable|array',
+            'requisitos.*' => 'nullable|string|max:500',
         ];
     }
 
