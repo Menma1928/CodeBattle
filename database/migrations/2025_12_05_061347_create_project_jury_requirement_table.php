@@ -21,8 +21,6 @@ return new class extends Migration
                 ->cascadeOnDelete();
             $table->unsignedTinyInteger('rating'); // 1-10
             $table->timestamps();
-
-            $table->unique(['project_id', 'requirement_id', 'jury_id']);
         });
     }
 
