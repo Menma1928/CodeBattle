@@ -97,6 +97,27 @@
                             <p class="text-gray-700 dark:text-gray-300 leading-relaxed">{{ $evento->descripcion }}</p>
                         </div>
                         @endif
+
+                        
+                        @if($user_team == null && !$user_is_admin && $evento->estado !== 'finalizado' && auth()->user()->hasrole('Participante'))
+                        <div class="mt-4 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                            <div class="flex items-center justify-between gap-4">
+                                <div>
+                                    <p class="text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1">¿No tienes equipo?</p>
+                                    <p class="text-sm text-purple-700 dark:text-purple-300">Crea tu equipo para participar en este evento</p>
+                                </div>
+                                <a href="{{ route('equipos.create', ['event_id' => $evento->id]) }}">
+                                    <x-primary-button>
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                        </svg>
+                                        Crear Equipo
+                                    </x-primary-button>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        @endif
                     </div>
                 </div>
             </x-card>

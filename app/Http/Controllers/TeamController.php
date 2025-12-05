@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Http\Requests\TeamStoreRequest;
 use App\Http\Requests\TeamUpdateRequest;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Gate;
+use App\Models\Event; 
 
 class TeamController extends Controller
 {
@@ -38,9 +40,9 @@ class TeamController extends Controller
         return view('equipos.index', compact('teams', 'title'));
     }
 
-    public function create(){
+    public function create(Event $event){
         $teams = Team::all();
-        return view('equipos.create', compact('teams'));
+        return view('equipos.create', compact('teams', 'event'));
     }
 
     public function store(TeamStoreRequest $request){

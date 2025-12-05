@@ -61,8 +61,8 @@
                     <button type="submit" name="estado" value="finalizado" class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ request('estado') == 'finalizado' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                         Finalizados
                     </button>
-                    <button type="submit" name="estado" value="proximo" class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ request('estado') == 'proximo' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
-                        Próximos
+                    <button type="submit" name="estado" value="pendiente" class="px-4 py-2 rounded-lg text-sm font-semibold transition-all {{ request('estado') == 'pendiente' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                        Pendientes
                     </button>
                 </div>
             </form>

@@ -21,7 +21,7 @@
 
             <!-- Team Information Card -->
             <x-card>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Información del Equipo</h3>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Informaciï¿½n del Equipo</h3>
 
                 <div class="space-y-6">
                     <!-- Nombre -->
@@ -41,9 +41,9 @@
                         <x-input-error :messages="$errors->get('nombre')" class="mt-2" />
                     </div>
 
-                    <!-- Descripción -->
+                    <!-- Descripciï¿½n -->
                     <div>
-                        <x-input-label for="descripcion" value="Descripción del Equipo *" />
+                        <x-input-label for="descripcion" value="Descripciï¿½n del Equipo *" />
                         <textarea
                             id="descripcion"
                             name="descripcion"
@@ -53,7 +53,7 @@
                             required
                             placeholder="Describe tu equipo, habilidades y objetivos..."
                         >{{ old('descripcion') }}</textarea>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Máximo 1000 caracteres</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Mï¿½ximo 1000 caracteres</p>
                         <x-input-error :messages="$errors->get('descripcion')" class="mt-2" />
                     </div>
 
@@ -76,52 +76,89 @@
             </x-card>
 
             <!-- Event Selection Card -->
-            <x-card>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Seleccionar Evento</h3>
+            @php
+                $preselectedEventId = request()->get('event_id') ?? old('event_id');
+                $selectedEvent = $preselectedEventId ? \App\Models\Event::find($preselectedEventId) : null;
+            @endphp
 
-                <div>
-                    <x-input-label for="event_id" value="Evento para Participar *" />
-                    <select
-                        id="event_id"
-                        name="event_id"
-                        class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-purple-500 dark:focus:border-purple-600 focus:ring-purple-500 dark:focus:ring-purple-600 rounded-lg shadow-sm"
-                        required
-                    >
-                        <option value="">Seleccione un evento</option>
-                        @php
-                            $events = \App\Models\Event::where('estado', '!=', 'finalizado')
-                                ->orderBy('fecha_inicio', 'desc')
-                                ->get();
-                        @endphp
-                        @foreach($events as $event)
-                            <option value="{{ $event->id }}" {{ old('event_id') == $event->id ? 'selected' : '' }}>
-                                {{ $event->nombre }} - {{ $event->fecha_inicio->format('d/m/Y') }}
-                                @if($event->estado === 'activo')
-                                    (Activo)
-                                @elseif($event->estado === 'pendiente')
-                                    (Próximamente)
-                                @endif
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Selecciona el evento en el que deseas participar con este equipo</p>
-                    <x-input-error :messages="$errors->get('event_id')" class="mt-2" />
-
-                    @if($events->isEmpty())
-                    <div class="mt-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                        <div class="flex items-start gap-3">
-                            <svg class="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                            </svg>
-                            <div>
-                                <p class="text-sm font-medium text-amber-800 dark:text-amber-200">No hay eventos disponibles</p>
-                                <p class="text-sm text-amber-700 dark:text-amber-300 mt-1">Actualmente no hay eventos activos o próximos. Contacta al administrador para más información.</p>
+            @if($selectedEvent)
+                <!-- Mostrar evento preseleccionado -->
+                <x-card class="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-purple-200 dark:border-purple-800">
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Evento Seleccionado</h3>
+                    
+                    <div class="flex items-start gap-4">
+                        @if($selectedEvent->url_imagen)
+                            <img src="{{ $selectedEvent->url_imagen }}" alt="{{ $selectedEvent->nombre }}" class="w-16 h-16 rounded-lg object-cover">
+                        @else
+                            <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center text-white text-2xl font-bold">
+                                {{ substr($selectedEvent->nombre ?? 'E', 0, 1) }}
                             </div>
+                        @endif
+                        
+                        <div class="flex-1">
+                            <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $selectedEvent->nombre }}</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                {{ $selectedEvent->fecha_inicio->format('d/m/Y') }}
+                                @if($selectedEvent->estado === 'activo')
+                                    â€¢ <span class="text-green-600 dark:text-green-400 font-medium">Activo</span>
+                                @elseif($selectedEvent->estado === 'pendiente')
+                                    â€¢ <span class="text-amber-600 dark:text-amber-400 font-medium">PrÃ³ximamente</span>
+                                @endif
+                            </p>
                         </div>
                     </div>
-                    @endif
-                </div>
-            </x-card>
+                    
+                    <input type="hidden" name="event_id" value="{{ $selectedEvent->id }}">
+                </x-card>
+            @else
+                <!-- Mostrar selector de eventos -->
+                <x-card>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Seleccionar Evento</h3>
+
+                    <div>
+                        <x-input-label for="event_id" value="Evento para Participar *" />
+                        <select
+                            id="event_id"
+                            name="event_id"
+                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-purple-500 dark:focus:border-purple-600 focus:ring-purple-500 dark:focus:ring-purple-600 rounded-lg shadow-sm"
+                            required
+                        >
+                            <option value="">Seleccione un evento</option>
+                            @php
+                                $events = \App\Models\Event::where('estado', '!=', 'finalizado')
+                                    ->orderBy('fecha_inicio', 'desc')
+                                    ->get();
+                            @endphp
+                            @foreach($events as $event)
+                                <option value="{{ $event->id }}">
+                                    {{ $event->nombre }} - {{ $event->fecha_inicio->format('d/m/Y') }}
+                                    @if($event->estado === 'activo')
+                                        (Activo)
+                                    @elseif($event->estado === 'pendiente')
+                                        (PrÃ³ximamente)
+                                    @endif
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Selecciona el evento en el que deseas participar con este equipo</p>
+                        <x-input-error :messages="$errors->get('event_id')" class="mt-2" />
+
+                        @if($events->isEmpty())
+                        <div class="mt-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                            <div class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                <div>
+                                    <p class="text-sm font-medium text-amber-800 dark:text-amber-200">No hay eventos disponibles</p>
+                                    <p class="text-sm text-amber-700 dark:text-amber-300 mt-1">Actualmente no hay eventos activos o prÃ³ximos. Contacta al administrador para mÃ¡s informaciÃ³n.</p>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                </x-card>
+            @endif
 
             <!-- Info Card -->
             <x-card class="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
@@ -130,12 +167,12 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <div>
-                        <h4 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Información importante</h4>
+                        <h4 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Informaciï¿½n importante</h4>
                         <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
-                            <li>Serás automáticamente el líder del equipo al crearlo</li>
+                            <li>Serï¿½s automï¿½ticamente el lï¿½der del equipo al crearlo</li>
                             <li>Los equipos pueden tener hasta 5 miembros</li>
                             <li>Solo puedes estar en un equipo por evento</li>
-                            <li>Podrás invitar a otros miembros después de crear el equipo</li>
+                            <li>Podrï¿½s invitar a otros miembros despuï¿½s de crear el equipo</li>
                         </ul>
                     </div>
                 </div>

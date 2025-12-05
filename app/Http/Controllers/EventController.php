@@ -10,6 +10,7 @@ use App\Models\Requirement;
 use App\Http\Requests\EventStoreRequest;
 use App\Http\Requests\EventUpdateRequest;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\User;
 
 class EventController extends Controller
 {
