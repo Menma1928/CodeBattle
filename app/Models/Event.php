@@ -8,6 +8,7 @@ use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\EventRule;
 use App\Models\Requirement;
 
@@ -45,5 +46,10 @@ class Event extends Model
     public function requirements(): HasMany
     {
         return $this->hasMany(Requirement::class);
+    }
+
+    public function juries(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'event_jury', 'event_id', 'user_id')->withTimestamps();
     }
 }

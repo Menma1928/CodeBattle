@@ -36,4 +36,23 @@ class Team extends Model
         return $this->hasOne(Project::class);
     }
 
+    /**
+     * Get the leader of the team
+     */
+    public function leader()
+    {
+        return $this->users()->wherePivot('rol', 'lider')->first();
+    }
+
+    /**
+     * Check if a user is the leader of this team
+     */
+    public function isLeader($userId): bool
+    {
+        return $this->users()
+            ->wherePivot('user_id', $userId)
+            ->wherePivot('rol', 'lider')
+            ->exists();
+    }
+
 }

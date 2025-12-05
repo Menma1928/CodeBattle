@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Team;
 use App\Models\User;
+use App\Http\Requests\TeamStoreRequest;
+use App\Http\Requests\TeamUpdateRequest;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class TeamController extends Controller
 {
+    use AuthorizesRequests;
     public function index(Request $request){
         $title = "Equipos";
         $query = Team::with('event');
@@ -39,40 +43,48 @@ class TeamController extends Controller
         return view('equipos.create', compact('teams'));
     }
 
-    public function store(Request $request){
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string|max:1000',
-            'url_banner' => 'nullable|string|max:255'
-        ]);
-        Team::create([
-            'name' => $request->name,
-            'description' => $request->description,
+    public function store(TeamStoreRequest $request){
+
+        // Validate that user is not already in a team for this event
+        $existingTeam = auth()->user()->teams()
+            ->where('event_id', $request->event_id)
+            ->exists();
+
+        if ($existingTeam) {
+            return redirect()->back()->withErrors([
+                'event_id' => 'Ya estás en un equipo para este evento.'
+            ])->withInput();
+        }
+
+        $team = Team::create([
+            'nombre' => $request->nombre,
+            'descripcion' => $request->descripcion,
             'url_banner' => $request->url_banner,
             'event_id' => $request->event_id,
         ]);
-        return redirect()->route('equipos.index');
+
+        // Assign creator as leader
+        $team->users()->attach(auth()->id(), ['rol' => 'lider']);
+
+        return redirect()->route('equipos.show', $team)->with('success', 'Equipo creado exitosamente.');
     }
     
     public function edit(Team $equipo){
+        $this->authorize('update', $equipo);
         return view('equipos.edit', compact('equipo'));
     }
 
-    public function update(Request $request, Team $equipo){
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string|max:1000',
-            'url_banner' => 'nullable|string|max:255'
-        ]);
+    public function update(TeamUpdateRequest $request, Team $equipo){
         $equipo->update([
-            'name' => $request->name,
-            'description' => $request->description,
+            'nombre' => $request->nombre,
+            'descripcion' => $request->descripcion,
             'url_banner' => $request->url_banner,
         ]);
-        return redirect()->route('equipos.index');
+        return redirect()->route('equipos.show', $equipo)->with('success', 'Equipo actualizado exitosamente.');
     }
 
     public function destroy(Team $equipo){
+        $this->authorize('delete', $equipo);
         $equipo->delete();
         return redirect()->route('equipos.index');
     }
@@ -96,58 +108,42 @@ class TeamController extends Controller
     }
 
     public function removeMember(Team $equipo, User $user){
-        // Verificar que el usuario autenticado sea Super Admin, administrador del evento o líder del equipo
-        $is_leader = $equipo->users()->where('user_id', auth()->id())->first()?->pivot?->rol === 'Líder';
-        $is_event_admin = $equipo->event->user_id == auth()->id();
-        
-        if (!auth()->user()->hasRole('Super Admin') && !$is_event_admin && !$is_leader) {
-            return redirect()->back()->with('error', 'No tienes permiso para eliminar miembros.');
-        }
-        
+        $this->authorize('manageMembers', $equipo);
+
         // No permitir eliminar al líder
         $member_role = $equipo->users()->where('user_id', $user->id)->first()?->pivot?->rol;
-        if ($member_role === 'Líder') {
+        if ($member_role === 'lider') {
             return redirect()->back()->with('error', 'No se puede eliminar al líder del equipo.');
         }
-        
+
         $equipo->users()->detach($user->id);
         return redirect()->back()->with('success', 'Miembro eliminado del equipo.');
     }
 
     public function leaveTeam(Team $equipo){
-        $user_role = $equipo->users()->where('user_id', auth()->id())->first()?->pivot?->rol;
-        
-        // No permitir al líder abandonar el equipo
-        if ($user_role === 'Líder') {
-            return redirect()->back()->with('error', 'El líder no puede abandonar el equipo. Transfiere el liderazgo o elimina el equipo.');
-        }
-        
+        $this->authorize('leave', $equipo);
+
         $equipo->users()->detach(auth()->id());
         return redirect()->route('equipos.index')->with('success', 'Has abandonado el equipo.');
     }
 
     public function updateMemberRole(Request $request, Team $equipo, User $user){
-        // Verificar que el usuario autenticado sea Super Admin o líder del equipo
-        $is_leader = $equipo->users()->where('user_id', auth()->id())->first()?->pivot?->rol === 'lider';
-        
-        if (!auth()->user()->hasRole('Super Admin') && !$is_leader) {
-            return response()->json(['error' => 'No tienes permiso para cambiar roles.'], 403);
-        }
-        
+        $this->authorize('updateMemberRole', $equipo);
+
         // No permitir cambiar el rol del líder
         $current_role = $equipo->users()->where('user_id', $user->id)->first()?->pivot?->rol;
         if ($current_role === 'lider') {
             return response()->json(['error' => 'No se puede cambiar el rol del líder.'], 403);
         }
-        
+
         // Validar el nuevo rol
         $request->validate([
             'rol' => 'required|in:miembro,lider,desarrollador,diseñador'
         ]);
-        
+
         // Actualizar el rol en la tabla intermedia
         $equipo->users()->updateExistingPivot($user->id, ['rol' => $request->rol]);
-        
+
         return response()->json(['success' => true, 'message' => 'Rol actualizado correctamente.']);
     }
 

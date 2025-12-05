@@ -24,8 +24,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
-        
+        'direccion',
+        'avatar_url',
+        'bio',
     ];
 
     /**
@@ -55,9 +56,15 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Team::class)->withPivot('rol')->withTimestamps();
     }
+
     public function events(): HasMany
     {
-        return $this->hasMany(Event::class);
+        return $this->hasMany(Event::class, 'admin_id');
+    }
+
+    public function juryEvents(): BelongsToMany
+    {
+        return $this->belongsToMany(Event::class, 'event_jury', 'user_id', 'event_id')->withTimestamps();
     }
 
 }

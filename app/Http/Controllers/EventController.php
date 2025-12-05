@@ -7,9 +7,13 @@ use App\Models\Event;
 use App\Models\Team;
 use App\Models\EventRule;
 use App\Models\Requirement;
+use App\Http\Requests\EventStoreRequest;
+use App\Http\Requests\EventUpdateRequest;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class EventController extends Controller
 {
+    use AuthorizesRequests;
     public function index(Request $request){
         $title = "Eventos";
         $query = Event::query();
@@ -35,26 +39,19 @@ class EventController extends Controller
 
     public function myEvents(){
         $title = "Mis Eventos";
-        $events = Event::where('admin_id', auth()->id())->paginate(10);
+        $events = Event::with('teams')
+            ->where('admin_id', auth()->id())
+            ->paginate(10);
         return view('eventos.index', compact('events', 'title'));
     }
 
     public function create(){
+        $this->authorize('create', Event::class);
         $events = Event::all();
         return view('eventos.create', compact('events'));
     }
 
-    public function store(Request $request){ 
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'required|string|max:1000',
-            'fecha_inicio' => 'required|date',
-            'fecha_fin' => 'date',
-            'direccion' => 'required|string|max:255',
-            'estado' => 'required|string|max:100',
-            'url_imagen' => 'nullable|string|max:255',
-            'admin_id' => 'required|integer|exists:users,id',
-        ]);
+    public function store(EventStoreRequest $request){
         $event = Event::create([
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
@@ -95,42 +92,98 @@ class EventController extends Controller
     }
 
     public function edit(Event $evento){
+        $this->authorize('update', $evento);
         return view('eventos.edit', compact('evento'));
     }
 
-    public function update(Request $request, Event $evento){
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'date' => 'required|date',
-            'location' => 'required|string|max:255',
-        ]);
+    public function update(EventUpdateRequest $request, Event $evento){
         $evento->update([
-            'name' => $request->name,
-            'date' => $request->date,
-            'location' => $request->location,
+            'nombre' => $request->nombre,
+            'descripcion' => $request->descripcion,
+            'fecha_inicio' => $request->fecha_inicio,
+            'fecha_fin' => $request->fecha_fin,
+            'direccion' => $request->direccion,
+            'estado' => $request->estado,
+            'url_imagen' => $request->url_imagen,
         ]);
         return redirect()->route('eventos.index');
     }
 
     public function destroy(Event $evento){
+        $this->authorize('delete', $evento);
         $evento->delete();
         return redirect()->route('eventos.index');
     }
 
     public function show(Event $evento){
-        $user_is_admin = auth()->id() === $evento->admin_id; // saber si el usuario es administrador del evento
+        $evento->load('eventRules', 'requirements', 'juries');
+        $user_is_admin = auth()->id() === $evento->admin_id;
         $user_team = null;
         if (!$user_is_admin) {
             $user_team = auth()->user()->teams()
-            ->where('event_id', $evento->id)
-            ->with('users')
-            ->first();
+                ->where('event_id', $evento->id)
+                ->with('users')
+                ->first();
         }
 
-        $teams = Team::where('event_id', $evento->id)->paginate(5);
+        $teams = Team::with('users', 'project')
+            ->where('event_id', $evento->id)
+            ->paginate(5);
         return view('eventos.evento', compact('evento', 'teams', 'user_is_admin', 'user_team'));
     }
 
-    
+    /**
+     * Show jury management page for an event
+     */
+    public function manageJuries(Event $evento)
+    {
+        $this->authorize('manageJuries', $evento);
+        $evento->load('juries');
+        $availableUsers = User::whereDoesntHave('juryEvents', function($query) use ($evento) {
+            $query->where('event_id', $evento->id);
+        })->get();
+
+        return view('eventos.manage-juries', compact('evento', 'availableUsers'));
+    }
+
+    /**
+     * Assign a jury to an event (max 3)
+     */
+    public function assignJury(Request $request, Event $evento)
+    {
+        $this->authorize('manageJuries', $evento);
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        // Check if event already has 3 juries
+        if ($evento->juries()->count() >= 3) {
+            return redirect()->back()->withErrors([
+                'user_id' => 'Este evento ya tiene el máximo de 3 jurados asignados.'
+            ]);
+        }
+
+        // Check if user is already a jury for this event
+        if ($evento->juries()->where('user_id', $request->user_id)->exists()) {
+            return redirect()->back()->withErrors([
+                'user_id' => 'Este usuario ya es jurado de este evento.'
+            ]);
+        }
+
+        $evento->juries()->attach($request->user_id);
+
+        return redirect()->back()->with('success', 'Jurado asignado exitosamente.');
+    }
+
+    /**
+     * Remove a jury from an event
+     */
+    public function removeJury(Event $evento, User $user)
+    {
+        $this->authorize('manageJuries', $evento);
+        $evento->juries()->detach($user->id);
+
+        return redirect()->back()->with('success', 'Jurado removido exitosamente.');
+    }
 
 }

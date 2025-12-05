@@ -8,9 +8,31 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Models\User;
 
 class ProfileController extends Controller
 {
+    /**
+     * Display public profile of a user
+     */
+    public function show(User $user): View
+    {
+        // Load teams with event information and the user's role in each team
+        $teams = $user->teams()
+            ->with(['event', 'users' => function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            }])
+            ->get();
+
+        // Add role and position information to each team
+        foreach ($teams as $team) {
+            $teamUser = $team->users->first();
+            $team->user_role = $teamUser ? $teamUser->pivot->rol : 'N/A';
+        }
+
+        return view('profile.show', compact('user', 'teams'));
+    }
+
     /**
      * Display the user's profile form.
      */

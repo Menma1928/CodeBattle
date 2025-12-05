@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Team;
 use App\Models\Requirement;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;   
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;   
 
 class Project extends Model
 {
@@ -16,7 +17,10 @@ class Project extends Model
     protected $fillable = [
         'nombre',
         'descripcion',
-        'url_repositorio',
+        'estado_validacion',
+        'url_archivo',
+        'github_url',
+        'fecha_subida',
         'team_id',
     ];
 
@@ -24,8 +28,16 @@ class Project extends Model
     {
         return $this->belongsTo(Team::class);
     }
+
     public function requirements(): BelongsToMany
     {
-        return $this->belongsToMany(Requirement::class);
+        return $this->belongsToMany(Requirement::class, 'project_requirement')
+            ->withPivot('rating')
+            ->withTimestamps();
+    }
+
+    public function juryRatings(): HasMany
+    {
+        return $this->hasMany(ProjectJuryRequirement::class);
     }
 }

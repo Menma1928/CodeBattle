@@ -5,6 +5,12 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Gate;
+use App\Models\Event;
+use App\Models\Team;
+use App\Models\Project;
+use App\Policies\EventPolicy;
+use App\Policies\TeamPolicy;
+use App\Policies\ProjectPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,8 +28,15 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(125);
+
+        // Register policies
+        Gate::policy(Event::class, EventPolicy::class);
+        Gate::policy(Team::class, TeamPolicy::class);
+        Gate::policy(Project::class, ProjectPolicy::class);
+
+        // Super Admin bypass
         Gate::before(function ($user, $ability) {
-        return $user->hasRole('Super Admin') ? true : null;
-    });
+            return $user->hasRole('Super Admin') ? true : null;
+        });
     }
 }
