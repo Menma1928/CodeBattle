@@ -19,18 +19,24 @@
         @endif
     </head>
     <body class="bg-[#ede9f3]">
-        <div class="min-h-screen flex flex-col justify-center items-center bg-[#ede9f3] px-4 py-8">
-            <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center border border-gray-300" style="border: 1.5px solid #bdbdf3;">
-                <img src="/logo.png" alt="CodeBattle Logo" class="w-20 h-20 mb-4 rounded-full shadow border-2 border-[#bdbdf3] bg-white object-contain" />
-                <h1 class="text-2xl font-extrabold text-[#6c5b7b] mb-2 tracking-tight text-center">CodeBattle</h1>
-                <h2 class="text-lg font-semibold text-gray-700 mb-4 text-center">Donde la competencia impulsa la excelencia</h2>
-                <p class="text-base text-gray-700 mb-6 text-center max-w-md">
+        <div class="min-h-screen w-full flex flex-row">
+            <!-- Lado izquierdo: imagen y fondo amarillo claro -->
+            <div class="w-1/2 h-screen flex items-center justify-center bg-[#fcf8dd]">
+                <img src="/carrusel/slide9.jpg" alt="Fondo Welcome" class="object-contain" style="max-width: 90%; max-height: 90%;" />
+            </div>
+            <!-- Lado derecho: fondo blanco, textos y botón -->
+            <div class="w-1/2 h-screen flex flex-col items-center justify-center bg-white">
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+                <h1 class="text-lg md:text-xl font-black text-[#22223b] mb-2 text-center tracking-widest uppercase" style="font-family: 'Inter', 'Oswald', sans-serif; letter-spacing: 0.12em;">¡Hola programadores!</h1>
+                <h2 class="text-2xl md:text-3xl font-black text-[#22223b] mb-4 text-center uppercase" style="font-family: 'Inter', 'Oswald', sans-serif;">Donde la competencia impulsa la excelencia</h2>
+                <p class="text-base md:text-lg text-[#22223b] mb-8 text-center max-w-xl font-semibold" style="font-family: 'Inter', 'Oswald', sans-serif;">
                     "En cada competencia, el verdadero rival eres tú mismo. No te rindas, cada reto es una oportunidad para crecer y demostrar de qué estás hecho. ¡Lucha, aprende y conquista!"
                 </p>
-                <div class="flex flex-row gap-2 mt-2 w-full justify-center">
-                    <a href="{{ route('login') }}" class="flex-1 py-2 px-4 text-base font-semibold bg-[#ede9f3] text-[#6c5b7b] rounded-full shadow border border-[#bdbdf3] hover:bg-[#e0deea] transition text-center">Inicio de sesión</a>
-                    <a href="{{ route('register') }}" class="flex-1 py-2 px-4 text-base font-semibold bg-white text-gray-700 rounded-full shadow border border-[#bdbdf3] hover:bg-[#ede9f3] transition text-center">Registrarse</a>
-                </div>
+                <a href="{{ route('login') }}"
+                   class="px-10 py-3 text-lg font-black bg-white text-[#22223b] rounded-xl shadow-lg transition-all duration-300 ease-in-out hover:bg-[#f3f3f3] hover:scale-105 focus:outline-none focus:ring-4 focus:ring-[#6c5b7b] mt-4"
+                   style="font-family: 'Inter', 'Oswald', sans-serif; letter-spacing: 0.08em;">
+                    CONTINUAR
+                </a>
             </div>
         </div>
     </body>
