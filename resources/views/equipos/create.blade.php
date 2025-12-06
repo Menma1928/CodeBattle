@@ -21,7 +21,7 @@
 
             <!-- Team Information Card -->
             <x-card>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Informaci�n del Equipo</h3>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Información del Equipo</h3>
 
                 <div class="space-y-6">
                     <!-- Nombre -->
@@ -41,9 +41,9 @@
                         <x-input-error :messages="$errors->get('nombre')" class="mt-2" />
                     </div>
 
-                    <!-- Descripci�n -->
+                    <!-- Descripción -->
                     <div>
-                        <x-input-label for="descripcion" value="Descripci�n del Equipo *" />
+                        <x-input-label for="descripcion" value="Descripción del Equipo *" />
                         <textarea
                             id="descripcion"
                             name="descripcion"
@@ -53,7 +53,7 @@
                             required
                             placeholder="Describe tu equipo, habilidades y objetivos..."
                         >{{ old('descripcion') }}</textarea>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">M�ximo 1000 caracteres</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Máximo 1000 caracteres</p>
                         <x-input-error :messages="$errors->get('descripcion')" class="mt-2" />
                     </div>
 
@@ -167,12 +167,12 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <div>
-                        <h4 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Informaci�n importante</h4>
+                        <h4 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Información importante</h4>
                         <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
-                            <li>Ser�s autom�ticamente el l�der del equipo al crearlo</li>
+                            <li>Serás automáticamente el líder del equipo al crearlo</li>
                             <li>Los equipos pueden tener hasta 5 miembros</li>
                             <li>Solo puedes estar en un equipo por evento</li>
-                            <li>Podr�s invitar a otros miembros despu�s de crear el equipo</li>
+                            <li>Podrás invitar a otros miembros después de crear el equipo</li>
                         </ul>
                     </div>
                 </div>
