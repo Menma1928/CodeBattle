@@ -24,6 +24,10 @@ class Project extends Model
         'team_id',
     ];
 
+    protected $casts = [
+        'fecha_subida' => 'datetime',
+    ];
+
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
