@@ -129,7 +129,7 @@ class TeamController extends Controller
     }
 
     public function show(Team $equipo){
-        $equipo->load('users', 'event', 'pendingJoinRequests.user');
+        $equipo->load('users', 'event', 'pendingJoinRequests.user', 'project');
         $members = $equipo->users;
 
         // Verificar si el usuario autenticado es líder del equipo
