@@ -114,11 +114,6 @@ class Event extends Model
             return 'finalizado';
         }
 
-        // Si el estado es 'en_calificacion', respetarlo
-        if ($this->estado === 'en_calificacion') {
-            return 'en_calificacion';
-        }
-
         // Determinar estado automático según fechas
         if ($this->isPending()) {
             return 'pendiente';
@@ -128,8 +123,7 @@ class Event extends Model
             return 'activo';
         }
 
-        // Si ya pasó la fecha de fin pero no está en calificación o finalizado
-        // sugerir que debería estar en calificación
+        // Si ya pasó la fecha de fin, cambiar a calificación automáticamente
         if ($this->hasEnded()) {
             return 'en_calificacion';
         }

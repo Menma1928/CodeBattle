@@ -390,5 +390,23 @@ class EventController extends Controller
         return redirect()->back()->with('success', 'Posiciones asignadas exitosamente.');
     }
 
+    /**
+     * Finalizar el evento (cambiar estado a finalizado)
+     */
+    public function finalize(Event $evento)
+    {
+        $this->authorize('update', $evento);
+
+        // Verificar que el evento esté en calificación
+        if ($evento->estado !== 'en_calificacion') {
+            return redirect()->back()->with('error', 'Solo se pueden finalizar eventos en estado de calificación.');
+        }
+
+        // Cambiar estado a finalizado
+        $evento->update(['estado' => 'finalizado']);
+
+        return redirect()->route('eventos.show', $evento)->with('success', 'El evento ha sido finalizado exitosamente. Los jurados ya no podrán calificar.');
+    }
+
 }
 

@@ -137,6 +137,18 @@
                                     Panel de Administración
                                 </x-secondary-button>
                             </a>
+                            
+                            @if($evento->estado === 'en_calificacion')
+                            <form method="POST" action="{{ route('eventos.finalize', $evento) }}" onsubmit="return confirm('¿Estás seguro de finalizar el evento? Los jurados ya no podrán calificar después de esta acción.');" class="inline">
+                                @csrf
+                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    Finalizar Evento
+                                </button>
+                            </form>
+                            @endif
                         </div>
                         @endif
                         
