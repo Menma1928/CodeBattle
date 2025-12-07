@@ -147,6 +147,7 @@ class EventController extends Controller
     public function show(Event $evento){
         $evento->load('eventRules', 'requirements', 'juries');
         $user_is_admin = auth()->id() === $evento->admin_id;
+        $user_is_jury = $evento->juries()->where('user_id', auth()->id())->exists();
         $user_team = null;
         if (!$user_is_admin) {
             $user_team = auth()->user()->teams()
@@ -158,7 +159,7 @@ class EventController extends Controller
         $teams = Team::with('users', 'project')
             ->where('event_id', $evento->id)
             ->paginate(5);
-        return view('eventos.evento', compact('evento', 'teams', 'user_is_admin', 'user_team'));
+        return view('eventos.evento', compact('evento', 'teams', 'user_is_admin', 'user_team', 'user_is_jury'));
     }
 
     /**
