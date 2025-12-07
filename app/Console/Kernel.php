@@ -21,7 +21,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Actualizar el estado de los eventos cada minuto
+        $schedule->command('events:update-status')->everyMinute();
     }
 
     /**

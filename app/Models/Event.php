@@ -39,6 +39,22 @@ class Event extends Model
         'fecha_fin' => 'datetime',
     ];
 
+    /**
+     * Boot del modelo para actualizar estados automáticamente
+     */
+    protected static function booted()
+    {
+        // Actualizar estado automáticamente cuando se recupera un evento
+        static::retrieved(function ($event) {
+            if (in_array($event->estado, ['pendiente', 'activo', 'en_calificacion'])) {
+                $currentState = $event->getCurrentState();
+                if ($event->estado !== $currentState) {
+                    $event->updateQuietly(['estado' => $currentState]);
+                }
+            }
+        });
+    }
+
     public function teams(): HasMany
     {
         return $this->hasMany(Team::class);

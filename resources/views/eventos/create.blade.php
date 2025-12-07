@@ -119,22 +119,17 @@
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Opcional: Ubicación física o enlace virtual</p>
                         <x-input-error :messages="$errors->get('direccion')" class="mt-2" />
                     </div>
+                </div>
 
-                    <!-- Estado -->
-                    <div class="md:col-span-2">
-                        <x-input-label for="estado" value="Estado del Evento *" />
-                        <select
-                            id="estado"
-                            name="estado"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-purple-500 dark:focus:border-purple-600 focus:ring-purple-500 dark:focus:ring-purple-600 rounded-lg shadow-sm"
-                            required
-                        >
-                            <option value="">Seleccione un estado</option>
-                            <option value="pendiente" {{ old('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                            <option value="activo" {{ old('estado') == 'activo' ? 'selected' : '' }}>Activo</option>
-                            <option value="finalizado" {{ old('estado') == 'finalizado' ? 'selected' : '' }}>Finalizado</option>
-                        </select>
-                        <x-input-error :messages="$errors->get('estado')" class="mt-2" />
+                <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <div>
+                            <p class="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">Estado Automático</p>
+                            <p class="text-sm text-blue-700 dark:text-blue-300">El estado del evento se determinará automáticamente según las fechas configuradas.</p>
+                        </div>
                     </div>
                 </div>
             </x-card>

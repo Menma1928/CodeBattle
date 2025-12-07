@@ -26,7 +26,6 @@ class EventStoreRequest extends FormRequest
             'fecha_inicio' => 'required|date',
             'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
             'direccion' => 'required|string|max:255',
-            'estado' => 'required|string|in:pendiente,activo,en_calificacion,finalizado',
             'image' => 'nullable|image|mimes:jpg,jpeg,png|max:204800', // 200 MB = 204800 KB
             'reglas' => 'nullable|array',
             'reglas.*' => 'nullable|string|max:500',
@@ -46,7 +45,6 @@ class EventStoreRequest extends FormRequest
             'fecha_inicio.required' => 'La fecha de inicio es obligatoria.',
             'fecha_fin.after_or_equal' => 'La fecha de fin debe ser posterior o igual a la fecha de inicio.',
             'direccion.required' => 'La dirección del evento es obligatoria.',
-            'estado.in' => 'El estado debe ser: pendiente, activo o finalizado.',
         ];
     }
 }

@@ -15,7 +15,26 @@ use App\Models\User;
 class EventController extends Controller
 {
     use AuthorizesRequests;
+    
+    /**
+     * Actualiza los estados de eventos que no están finalizados
+     */
+    private function updateEventStatuses()
+    {
+        Event::whereIn('estado', ['pendiente', 'activo', 'en_calificacion'])
+            ->get()
+            ->each(function ($event) {
+                $currentState = $event->getCurrentState();
+                if ($event->estado !== $currentState) {
+                    $event->update(['estado' => $currentState]);
+                }
+            });
+    }
+    
     public function index(Request $request){
+        // Actualizar estados de eventos automáticamente
+        $this->updateEventStatuses();
+        
         $title = "Eventos";
         $query = Event::with('admin', 'teams'); // Eager loading
 
@@ -39,6 +58,9 @@ class EventController extends Controller
     }
 
     public function myEvents(){
+        // Actualizar estados de eventos automáticamente
+        $this->updateEventStatuses();
+        
         $title = "Mis Eventos";
         $events = Event::with('teams')
             ->where('admin_id', auth()->id())
@@ -53,15 +75,21 @@ class EventController extends Controller
     }
 
     public function store(EventStoreRequest $request){
+        // Crear evento con estado 'pendiente' temporalmente
         $event = Event::create([
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
             'fecha_inicio' => $request->fecha_inicio,
             'fecha_fin' => $request->fecha_fin,
             'direccion' => $request->direccion,
-            'estado' => $request->estado,
+            'estado' => 'pendiente',
             'url_imagen' => null,
             'admin_id' => auth()->id(),
+        ]);
+
+        // Actualizar estado automáticamente basado en fechas
+        $event->update([
+            'estado' => $event->getCurrentState()
         ]);
 
         // Manejar subida de imagen si existe (después de crear el evento para tener el ID)
@@ -179,6 +207,13 @@ class EventController extends Controller
     }
 
     public function show(Event $evento){
+        // Actualizar estado del evento automáticamente
+        $currentState = $evento->getCurrentState();
+        if ($evento->estado !== $currentState && in_array($evento->estado, ['pendiente', 'activo', 'en_calificacion'])) {
+            $evento->update(['estado' => $currentState]);
+            $evento->refresh();
+        }
+        
         $evento->load('eventRules', 'requirements', 'juries');
         $user_is_admin = auth()->id() === $evento->admin_id;
         $user_is_jury = $evento->juries()->where('user_id', auth()->id())->exists();
