@@ -23,16 +23,22 @@ class JuryRatingController extends Controller
 
         $event->load('requirements');
 
-        // Get all projects from teams in this event
+        // Get all projects from teams in this event with eager loading optimizado
         $projects = Project::whereHas('team', function($query) use ($event) {
             $query->where('event_id', $event->id);
-        })->with('team', 'juryRatings')->get();
+        })
+        ->with([
+            'team.event',
+            'team.users',
+            'juryRatings' => function($query) {
+                $query->where('jury_id', auth()->id());
+            }
+        ])
+        ->get();
 
         // Check which projects have been rated by this jury
         foreach ($projects as $project) {
-            $project->jury_has_rated = $project->juryRatings()
-                ->where('jury_id', auth()->id())
-                ->count() === $event->requirements->count();
+            $project->jury_has_rated = $project->juryRatings->count() === $event->requirements->count();
         }
 
         return view('jury.projects-index', compact('event', 'projects'));
@@ -50,6 +56,9 @@ class JuryRatingController extends Controller
             ]);
         }
 
+        // Informar si el evento está finalizado (solo lectura)
+        $readOnly = !$event->canEditRatings();
+
         // Check if project belongs to this event
         if ($project->team->event_id !== $event->id) {
             return redirect()->back()->withErrors([
@@ -66,7 +75,7 @@ class JuryRatingController extends Controller
             ->get()
             ->keyBy('requirement_id');
 
-        return view('jury.rate-project', compact('event', 'project', 'existingRatings'));
+        return view('jury.rate-project', compact('event', 'project', 'existingRatings', 'readOnly'));
     }
 
     /**
@@ -78,6 +87,13 @@ class JuryRatingController extends Controller
         if (!$event->juries()->where('user_id', auth()->id())->exists()) {
             return redirect()->back()->withErrors([
                 'error' => 'No eres jurado de este evento.'
+            ]);
+        }
+
+        // Verificar que el evento permita editar calificaciones
+        if (!$event->canEditRatings()) {
+            return redirect()->back()->withErrors([
+                'error' => 'No se pueden editar calificaciones. El evento debe estar en estado "en_calificacion".'
             ]);
         }
 

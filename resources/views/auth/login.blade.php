@@ -79,16 +79,34 @@
 
         <!-- Email Address -->
         <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
+            <x-input-label for="register_email" :value="__('Email')" />
+            <x-text-input id="register_email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        </div>
+
+        <!-- Dirección -->
+        <div class="mt-4">
+            <x-input-label for="register_direccion" value="Dirección" />
+            <x-text-input id="register_direccion" class="block mt-1 w-full" type="text" name="direccion" :value="old('direccion')" required autocomplete="street-address" />
+            <x-input-error :messages="$errors->get('direccion')" class="mt-2" />
+        </div>
+
+        <!-- Rol -->
+        <div class="mt-4">
+            <x-input-label for="register_rol" value="Tipo de Usuario" />
+            <select id="register_rol" name="rol" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" required>
+                <option value="">Selecciona tu rol</option>
+                <option value="Administrador" {{ old('rol') == 'Administrador' ? 'selected' : '' }}>Administrador de Eventos</option>
+                <option value="Participante" {{ old('rol') == 'Participante' ? 'selected' : '' }}>Participante</option>
+            </select>
+            <x-input-error :messages="$errors->get('rol')" class="mt-2" />
         </div>
 
         <!-- Password -->
         <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+            <x-input-label for="register_password" :value="__('Password')" />
 
-            <x-text-input id="password" class="block mt-1 w-full"
+            <x-text-input id="register_password" class="block mt-1 w-full"
                             type="password"
                             name="password"
                             required autocomplete="new-password" />
@@ -98,9 +116,9 @@
 
         <!-- Confirm Password -->
         <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+            <x-input-label for="register_password_confirmation" :value="__('Confirm Password')" />
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
+            <x-text-input id="register_password_confirmation" class="block mt-1 w-full"
                             type="password"
                             name="password_confirmation" required autocomplete="new-password" />
 

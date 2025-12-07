@@ -67,4 +67,9 @@ class User extends Authenticatable
         return $this->belongsToMany(Event::class, 'event_jury', 'user_id', 'event_id')->withTimestamps();
     }
 
+    public function teamJoinRequests(): HasMany
+    {
+        return $this->hasMany(TeamJoinRequest::class);
+    }
+
 }

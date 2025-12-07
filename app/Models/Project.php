@@ -40,4 +40,26 @@ class Project extends Model
     {
         return $this->hasMany(ProjectJuryRequirement::class);
     }
+
+    /**
+     * Calcular el promedio global del proyecto
+     */
+    public function getAverageRating(): float
+    {
+        // Obtener el promedio de los ratings en la tabla project_requirement
+        $average = $this->requirements()->avg('project_requirement.rating');
+        return round($average ?? 0, 2);
+    }
+
+    /**
+     * Obtener el promedio de un requisito específico
+     */
+    public function getRequirementAverage($requirementId): float
+    {
+        $requirement = $this->requirements()
+            ->where('requirement_id', $requirementId)
+            ->first();
+
+        return round($requirement?->pivot?->rating ?? 0, 2);
+    }
 }

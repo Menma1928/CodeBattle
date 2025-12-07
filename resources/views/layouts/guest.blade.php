@@ -14,15 +14,15 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0" style="background-color: #ffffffff;">
+    <body class="font-sans antialiased bg-gradient-to-br from-purple-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-900 dark:to-indigo-950">
+        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 shadow-md overflow-hidden sm:rounded-lg" style="background-color: #c5c1d4; border: 1px solid rgb(24, 29, 76); ">
-                <div class="flex flex-col justify-center items-center mb-4">
+            <div class="w-full sm:max-w-md mt-6 px-6 py-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-xl overflow-hidden sm:rounded-lg border border-purple-200 dark:border-gray-700">
+                <div class="flex flex-col justify-center items-center mb-6">
                     <a href="/">
-                        <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+                        <x-application-logo class="w-20 h-20 fill-current text-purple-600 dark:text-purple-400" />
                     </a>
-                    <p class="text-lg font-semibold text-white">CodeBattle</p>
+                    <p class="text-2xl font-bold text-gray-800 dark:text-white mt-2">CodeBattle</p>
                 </div>
                 {{ $slot }}
             </div>

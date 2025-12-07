@@ -17,8 +17,8 @@ class EventController extends Controller
     use AuthorizesRequests;
     public function index(Request $request){
         $title = "Eventos";
-        $query = Event::query();
-        
+        $query = Event::with('admin', 'teams'); // Eager loading
+
         // Búsqueda por nombre o descripción
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
@@ -28,12 +28,12 @@ class EventController extends Controller
                   ->orWhere('direccion', 'like', '%' . $search . '%');
             });
         }
-        
+
         // Filtro por estado
         if ($request->has('estado') && $request->estado != 'todos') {
             $query->where('estado', $request->estado);
         }
-        
+
         $events = $query->paginate(10)->withQueryString();
         return view('eventos.index', compact('events', 'title'));
     }
@@ -53,6 +53,17 @@ class EventController extends Controller
     }
 
     public function store(EventStoreRequest $request){
+        $imagePath = null;
+
+        // Manejar subida de imagen si existe
+        if ($request->hasFile('url_imagen')) {
+            $image = $request->file('url_imagen');
+            $imageName = 'event_' . time() . '.' . $image->getClientOriginalExtension();
+            $imagePath = $image->storeAs('public/events', $imageName);
+            // Convertir a la ruta pública
+            $imagePath = str_replace('public/', 'storage/', $imagePath);
+        }
+
         $event = Event::create([
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
@@ -60,7 +71,7 @@ class EventController extends Controller
             'fecha_fin' => $request->fecha_fin,
             'direccion' => $request->direccion,
             'estado' => $request->estado,
-            'url_imagen' => $request->url_imagen,
+            'url_imagen' => $imagePath,
             'admin_id' => auth()->id(),
         ]);
 
@@ -98,15 +109,31 @@ class EventController extends Controller
     }
 
     public function update(EventUpdateRequest $request, Event $evento){
-        $evento->update([
+        $updateData = [
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
             'fecha_inicio' => $request->fecha_inicio,
             'fecha_fin' => $request->fecha_fin,
             'direccion' => $request->direccion,
             'estado' => $request->estado,
-            'url_imagen' => $request->url_imagen,
-        ]);
+        ];
+
+        // Manejar subida de nueva imagen si existe
+        if ($request->hasFile('url_imagen')) {
+            // Eliminar imagen anterior si existe
+            if ($evento->url_imagen) {
+                $oldImagePath = str_replace('storage/', 'public/', $evento->url_imagen);
+                \Storage::delete($oldImagePath);
+            }
+
+            $image = $request->file('url_imagen');
+            $imageName = 'event_' . $evento->id . '_' . time() . '.' . $image->getClientOriginalExtension();
+            $imagePath = $image->storeAs('public/events', $imageName);
+            // Convertir a la ruta pública
+            $updateData['url_imagen'] = str_replace('public/', 'storage/', $imagePath);
+        }
+
+        $evento->update($updateData);
 
         // Actualizar reglas: eliminar las existentes y crear las nuevas
         $evento->eventRules()->delete();
@@ -147,7 +174,9 @@ class EventController extends Controller
     public function show(Event $evento){
         $evento->load('eventRules', 'requirements', 'juries');
         $user_is_admin = auth()->id() === $evento->admin_id;
+        $user_is_jury = $evento->juries()->where('user_id', auth()->id())->exists();
         $user_team = null;
+
         if (!$user_is_admin) {
             $user_team = auth()->user()->teams()
                 ->where('event_id', $evento->id)
@@ -155,10 +184,31 @@ class EventController extends Controller
                 ->first();
         }
 
+        // Si el evento está finalizado, mostrar tabla de ganadores
+        if ($evento->estado === 'finalizado') {
+            $teams = Team::with(['users' => function($query) {
+                    $query->wherePivot('rol', 'lider');
+                }, 'project.requirements'])
+                ->where('event_id', $evento->id)
+                ->whereNotNull('posicion')
+                ->orderBy('posicion', 'asc')
+                ->get();
+
+            // Calcular calificación promedio para cada equipo
+            foreach ($teams as $team) {
+                $team->average_rating = $team->project ? $team->project->getAverageRating() : 0;
+                $team->leader_name = $team->users->first()?->name ?? 'Sin líder';
+            }
+
+            return view('eventos.finalizado', compact('evento', 'teams', 'user_is_admin', 'user_is_jury'));
+        }
+
+        // Vista normal para eventos no finalizados
         $teams = Team::with('users', 'project')
             ->where('event_id', $evento->id)
             ->paginate(5);
-        return view('eventos.evento', compact('evento', 'teams', 'user_is_admin', 'user_team'));
+
+        return view('eventos.evento', compact('evento', 'teams', 'user_is_admin', 'user_team', 'user_is_jury'));
     }
 
     /**
@@ -168,9 +218,17 @@ class EventController extends Controller
     {
         $this->authorize('manageJuries', $evento);
         $evento->load('juries');
+
+        // Solo mostrar usuarios con rol de Administrador o Super Admin
         $availableUsers = User::whereDoesntHave('juryEvents', function($query) use ($evento) {
             $query->where('event_id', $evento->id);
-        })->get();
+        })
+        ->where(function($query) {
+            $query->whereHas('roles', function($q) {
+                $q->whereIn('name', ['Administrador', 'Super Admin']);
+            });
+        })
+        ->get();
 
         return view('eventos.manage-juries', compact('evento', 'availableUsers'));
     }
@@ -184,6 +242,15 @@ class EventController extends Controller
         $request->validate([
             'user_id' => 'required|exists:users,id',
         ]);
+
+        $user = User::findOrFail($request->user_id);
+
+        // Validar que el usuario tenga rol de Administrador
+        if (!$user->hasRole('Administrador') && !$user->hasRole('Super Admin')) {
+            return redirect()->back()->withErrors([
+                'user_id' => 'Solo usuarios con rol de "Administrador de Eventos" pueden ser asignados como jurados.'
+            ]);
+        }
 
         // Check if event already has 3 juries
         if ($evento->juries()->count() >= 3) {
@@ -215,4 +282,70 @@ class EventController extends Controller
         return redirect()->back()->with('success', 'Jurado removido exitosamente.');
     }
 
+    /**
+     * Dashboard del administrador del evento
+     */
+    public function dashboard(Event $evento)
+    {
+        $this->authorize('update', $evento);
+
+        $evento->load('requirements', 'juries');
+
+        // Obtener todos los equipos con sus proyectos y calificaciones
+        $teams = Team::with([
+            'users' => function($query) {
+                $query->wherePivot('rol', 'lider');
+            },
+            'project.requirements',
+            'project.juryRatings.jury',
+            'project.juryRatings.requirement'
+        ])
+        ->where('event_id', $evento->id)
+        ->get();
+
+        // Calcular calificaciones promedio
+        foreach ($teams as $team) {
+            if ($team->project) {
+                $team->average_rating = $team->project->getAverageRating();
+                $team->leader_name = $team->users->first()?->name ?? 'Sin líder';
+
+                // Verificar si todos los jurados han calificado
+                $totalJuries = $evento->juries->count();
+                $totalRequirements = $evento->requirements->count();
+                $expectedRatings = $totalJuries * $totalRequirements;
+                $actualRatings = $team->project->juryRatings->count();
+                $team->all_rated = $actualRatings >= $expectedRatings;
+            } else {
+                $team->average_rating = 0;
+                $team->leader_name = $team->users->first()?->name ?? 'Sin líder';
+                $team->all_rated = false;
+            }
+        }
+
+        // Ordenar por calificación promedio (descendente)
+        $teams = $teams->sortByDesc('average_rating')->values();
+
+        return view('eventos.dashboard', compact('evento', 'teams'));
+    }
+
+    /**
+     * Asignar posiciones a los equipos
+     */
+    public function assignPositions(Request $request, Event $evento)
+    {
+        $this->authorize('update', $evento);
+
+        $request->validate([
+            'positions' => 'required|array',
+            'positions.*' => 'required|integer|min:1',
+        ]);
+
+        foreach ($request->positions as $teamId => $position) {
+            Team::where('id', $teamId)->update(['posicion' => $position]);
+        }
+
+        return redirect()->back()->with('success', 'Posiciones asignadas exitosamente.');
+    }
+
 }
+

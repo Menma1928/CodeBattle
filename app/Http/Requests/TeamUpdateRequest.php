@@ -22,7 +22,7 @@ class TeamUpdateRequest extends FormRequest
         return [
             'nombre' => 'required|string|max:255',
             'descripcion' => 'required|string|max:1000',
-            'url_banner' => 'nullable|url|max:255',
+            'url_banner' => 'nullable|image|mimes:jpg,jpeg,png|max:204800', // 200 MB = 204800 KB
         ];
     }
 

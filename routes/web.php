@@ -26,6 +26,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/eventos/{evento}/manage-juries', [EventController::class, 'manageJuries'])->name('eventos.manageJuries');
         Route::post('/eventos/{evento}/assign-jury', [EventController::class, 'assignJury'])->name('eventos.assignJury');
         Route::delete('/eventos/{evento}/remove-jury/{user}', [EventController::class, 'removeJury'])->name('eventos.removeJury');
+        Route::get('/eventos/{evento}/dashboard', [EventController::class, 'dashboard'])->name('eventos.dashboard');
+        Route::post('/eventos/{evento}/assign-positions', [EventController::class, 'assignPositions'])->name('eventos.assignPositions');
     });
     Route::get('/mis-eventos', [EventController::class, 'myEvents'])->name('eventos.misEventos')->middleware(['permission:ver mis eventos']);
     Route::group(['middleware' => ['permission:ver equipos']], function(){
@@ -36,6 +38,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/equipos/{equipo}/update-role/{user}', [TeamController::class, 'updateMemberRole'])->name('equipos.updateMemberRole');
     });
     Route::get('/mis-equipos', [TeamController::class, 'myTeams'])->name('equipos.misEquipos')->middleware(['permission:ver mis equipos']);
+
+    // Team join requests routes
+    Route::post('/equipos/{team}/join-request', [App\Http\Controllers\TeamJoinRequestController::class, 'store'])->name('equipos.joinRequest');
+    Route::post('/join-requests/{request}/accept', [App\Http\Controllers\TeamJoinRequestController::class, 'accept'])->name('joinRequests.accept');
+    Route::post('/join-requests/{request}/reject', [App\Http\Controllers\TeamJoinRequestController::class, 'reject'])->name('joinRequests.reject');
+    Route::delete('/join-requests/{request}/cancel', [App\Http\Controllers\TeamJoinRequestController::class, 'cancel'])->name('joinRequests.cancel');
 
     // Projects routes
     Route::resource('projects', ProjectController::class);

@@ -16,8 +16,8 @@ class TeamController extends Controller
     use AuthorizesRequests;
     public function index(Request $request){
         $title = "Equipos";
-        $query = Team::with('event');
-        
+        $query = Team::with(['event', 'users', 'project']); // Eager loading optimizado
+
         // Búsqueda por nombre, descripción o evento
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
@@ -29,14 +29,16 @@ class TeamController extends Controller
                   });
             });
         }
-        
+
         $teams = $query->paginate(10)->withQueryString();
         return view('equipos.index', compact('teams', 'title'));
     }
 
     public function myTeams(){
         $title = "Mis Equipos";
-        $teams = auth()->user()->teams()->paginate(10);
+        $teams = auth()->user()->teams()
+            ->with(['event', 'users', 'project']) // Eager loading
+            ->paginate(10);
         return view('equipos.index', compact('teams', 'title'));
     }
 
@@ -58,10 +60,21 @@ class TeamController extends Controller
             ])->withInput();
         }
 
+        $bannerPath = null;
+
+        // Manejar subida de banner si existe
+        if ($request->hasFile('url_banner')) {
+            $banner = $request->file('url_banner');
+            $bannerName = 'team_' . time() . '.' . $banner->getClientOriginalExtension();
+            $bannerPath = $banner->storeAs('public/teams', $bannerName);
+            // Convertir a la ruta pública
+            $bannerPath = str_replace('public/', 'storage/', $bannerPath);
+        }
+
         $team = Team::create([
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
-            'url_banner' => $request->url_banner,
+            'url_banner' => $bannerPath,
             'event_id' => $request->event_id,
         ]);
 
@@ -77,11 +90,28 @@ class TeamController extends Controller
     }
 
     public function update(TeamUpdateRequest $request, Team $equipo){
-        $equipo->update([
+        $updateData = [
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
-            'url_banner' => $request->url_banner,
-        ]);
+        ];
+
+        // Manejar subida de nuevo banner si existe
+        if ($request->hasFile('url_banner')) {
+            // Eliminar banner anterior si existe
+            if ($equipo->url_banner) {
+                $oldBannerPath = str_replace('storage/', 'public/', $equipo->url_banner);
+                \Storage::delete($oldBannerPath);
+            }
+
+            $banner = $request->file('url_banner');
+            $bannerName = 'team_' . $equipo->id . '_' . time() . '.' . $banner->getClientOriginalExtension();
+            $bannerPath = $banner->storeAs('public/teams', $bannerName);
+            // Convertir a la ruta pública
+            $updateData['url_banner'] = str_replace('public/', 'storage/', $bannerPath);
+        }
+
+        $equipo->update($updateData);
+
         return redirect()->route('equipos.show', $equipo)->with('success', 'Equipo actualizado exitosamente.');
     }
 
@@ -92,9 +122,9 @@ class TeamController extends Controller
     }
 
     public function show(Team $equipo){
-        $equipo->load('users', 'event');
+        $equipo->load('users', 'event', 'pendingJoinRequests.user');
         $members = $equipo->users;
-        
+
         // Verificar si el usuario autenticado es líder del equipo
         $is_leader = false;
         $is_member = false;
@@ -105,8 +135,26 @@ class TeamController extends Controller
                 $is_leader = true;
             }
         }
-        
-        return view('equipos.equipo', compact('equipo', 'members', 'is_leader', 'is_member'));
+
+        // Verificar si el usuario tiene una solicitud pendiente
+        $has_pending_request = \App\Models\TeamJoinRequest::where('team_id', $equipo->id)
+            ->where('user_id', auth()->id())
+            ->where('status', 'pending')
+            ->exists();
+
+        // Verificar si el usuario ya está en un equipo de este evento
+        $user_team_in_event = auth()->user()->teams()
+            ->where('event_id', $equipo->event_id)
+            ->exists();
+
+        return view('equipos.equipo', compact(
+            'equipo',
+            'members',
+            'is_leader',
+            'is_member',
+            'has_pending_request',
+            'user_team_in_event'
+        ));
     }
 
     public function removeMember(Team $equipo, User $user){

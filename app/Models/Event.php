@@ -62,4 +62,87 @@ class Event extends Model
     {
         return $this->belongsToMany(User::class, 'event_jury', 'event_id', 'user_id')->withTimestamps();
     }
+
+    /**
+     * Determinar si el evento está activo según las fechas
+     */
+    public function isActive(): bool
+    {
+        $now = now();
+        return $now->between($this->fecha_inicio, $this->fecha_fin);
+    }
+
+    /**
+     * Determinar si el evento ya finalizó según la fecha
+     */
+    public function hasEnded(): bool
+    {
+        return now()->gt($this->fecha_fin);
+    }
+
+    /**
+     * Determinar si el evento aún no ha comenzado
+     */
+    public function isPending(): bool
+    {
+        return now()->lt($this->fecha_inicio);
+    }
+
+    /**
+     * Obtener el estado actual del evento basado en fechas
+     */
+    public function getCurrentState(): string
+    {
+        // Si el estado es 'finalizado', respetarlo (fue cerrado manualmente)
+        if ($this->estado === 'finalizado') {
+            return 'finalizado';
+        }
+
+        // Si el estado es 'en_calificacion', respetarlo
+        if ($this->estado === 'en_calificacion') {
+            return 'en_calificacion';
+        }
+
+        // Determinar estado automático según fechas
+        if ($this->isPending()) {
+            return 'pendiente';
+        }
+
+        if ($this->isActive()) {
+            return 'activo';
+        }
+
+        // Si ya pasó la fecha de fin pero no está en calificación o finalizado
+        // sugerir que debería estar en calificación
+        if ($this->hasEnded()) {
+            return 'en_calificacion';
+        }
+
+        return 'pendiente';
+    }
+
+    /**
+     * Verificar si se pueden editar calificaciones
+     */
+    public function canEditRatings(): bool
+    {
+        return $this->estado === 'en_calificacion';
+    }
+
+    /**
+     * Verificar si se puede editar información del proyecto (GitHub, etc.)
+     */
+    public function canEditProjects(): bool
+    {
+        return in_array($this->estado, ['activo', 'en_calificacion']);
+    }
+
+    /**
+     * Verificar si se pueden aceptar solicitudes de unión a equipos
+     */
+    public function canJoinTeams(): bool
+    {
+        return $this->estado === 'pendiente';
+    }
 }
+

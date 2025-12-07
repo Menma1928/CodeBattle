@@ -34,6 +34,7 @@ class RegisteredUserController extends Controller
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'direccion' => ['required', 'string', 'max:255'],
+            'rol' => ['required', 'string', 'in:Administrador,Participante'],
         ]);
 
         $user = User::create([
@@ -42,6 +43,10 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
             'direccion' => $request->direccion,
         ]);
+
+        // Asignar el rol seleccionado durante el registro
+        // Este rol no puede ser cambiado por el usuario después
+        $user->assignRole($request->rol);
 
         event(new Registered($user));
 

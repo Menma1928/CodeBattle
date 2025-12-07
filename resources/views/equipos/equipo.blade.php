@@ -73,6 +73,65 @@
                 </div>
             </x-card>
 
+            <!-- Pending Join Requests Section (Only for leader) -->
+            @if($is_leader && $equipo->pendingJoinRequests->count() > 0)
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                    Solicitudes Pendientes ({{ $equipo->pendingJoinRequests->count() }})
+                </h2>
+
+                <x-card :padding="false">
+                    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @foreach($equipo->pendingJoinRequests as $request)
+                        <div class="p-6">
+                            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                <!-- User Info -->
+                                <div class="flex items-center gap-4 flex-1">
+                                    <x-avatar :name="$request->user->name" size="lg" />
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+                                            {{ $request->user->name }}
+                                        </h3>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ $request->user->email }}</p>
+                                        @if($request->message)
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 italic">"{{ $request->message }}"</p>
+                                        @endif
+                                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                            Solicitó el {{ $request->created_at->format('d/m/Y H:i') }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="flex gap-2 w-full sm:w-auto">
+                                    <form method="POST" action="{{ route('joinRequests.accept', $request) }}" class="flex-1 sm:flex-none">
+                                        @csrf
+                                        <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-sm transition-colors">
+                                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            Aceptar
+                                        </button>
+                                    </form>
+
+                                    <form method="POST" action="{{ route('joinRequests.reject', $request) }}" class="flex-1 sm:flex-none">
+                                        @csrf
+                                        <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-sm transition-colors">
+                                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                            Rechazar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </x-card>
+            </div>
+            @endif
+
             <!-- Team Members Section -->
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
@@ -177,10 +236,43 @@
                         </button>
                     </form>
 
-                @elseif(!$is_member && auth()->user()->hasRole('Participante') && $equipo->users->count() < 5)
-                    <button onclick="alert('Funcionalidad en desarrollo')" class="inline-flex items-center px-8 py-2 bg-emerald-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 focus:bg-emerald-700 active:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                        Solicitar Unirme
-                    </button>
+                @elseif(!$is_member && $equipo->event->estado === 'pendiente')
+                    @if($has_pending_request)
+                        <!-- Pending Request Message -->
+                        <div class="text-center">
+                            <x-badge type="warning" size="lg">
+                                Solicitud Pendiente
+                            </x-badge>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                                Tu solicitud está siendo revisada por el líder del equipo.
+                            </p>
+                        </div>
+                    @elseif($user_team_in_event)
+                        <!-- Already in another team -->
+                        <div class="text-center">
+                            <x-badge type="info" size="lg">
+                                Ya estás en un equipo de este evento
+                            </x-badge>
+                        </div>
+                    @elseif($equipo->users->count() >= 5)
+                        <!-- Team is full -->
+                        <div class="text-center">
+                            <x-badge type="danger" size="lg">
+                                Equipo Completo (5/5)
+                            </x-badge>
+                        </div>
+                    @else
+                        <!-- Join Request Button -->
+                        <form method="POST" action="{{ route('equipos.joinRequest', $equipo) }}">
+                            @csrf
+                            <button type="submit" class="inline-flex items-center px-8 py-2 bg-emerald-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 focus:bg-emerald-700 active:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                                </svg>
+                                Solicitar Unirme
+                            </button>
+                        </form>
+                    @endif
                 @endif
             </div>
         </div>

@@ -89,9 +89,9 @@ class ProjectController extends Controller
         $project->load('team.event', 'team.users', 'juryRatings.jury', 'juryRatings.requirement');
 
         $isLeader = $project->team->isLeader(auth()->id());
-        $eventIsActive = $project->team->event->estado === 'activo';
+        $canEdit = $project->team->event->canEditProjects();
 
-        return view('projects.show', compact('project', 'isLeader', 'eventIsActive'));
+        return view('projects.show', compact('project', 'isLeader', 'canEdit'));
     }
 
     /**
@@ -102,9 +102,16 @@ class ProjectController extends Controller
         $this->authorize('update', $project);
         $project->load('team.event');
 
-        $eventIsActive = $project->team->event->estado === 'activo';
+        // Verificar si el evento permite editar proyectos
+        if (!$project->team->event->canEditProjects()) {
+            return redirect()->back()->withErrors([
+                'error' => 'No se puede editar el proyecto. El evento debe estar en estado "activo" o "en_calificacion".'
+            ]);
+        }
 
-        return view('projects.edit', compact('project', 'eventIsActive'));
+        $canEdit = $project->team->event->canEditProjects();
+
+        return view('projects.edit', compact('project', 'canEdit'));
     }
 
     /**
@@ -114,15 +121,22 @@ class ProjectController extends Controller
     {
         $project->load('team.event');
 
-        $eventIsActive = $project->team->event->estado === 'activo';
+        // Verificar si el evento permite editar proyectos
+        if (!$project->team->event->canEditProjects()) {
+            return redirect()->back()->withErrors([
+                'error' => 'No se puede editar el proyecto. El evento debe estar en estado "activo" o "en_calificacion".'
+            ]);
+        }
+
+        $canEdit = $project->team->event->canEditProjects();
 
         $updateData = [
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
         ];
 
-        // Only update github_url if event is active
-        if ($eventIsActive && $request->has('github_url')) {
+        // Solo actualizar github_url si el evento permite editar proyectos
+        if ($canEdit && $request->has('github_url')) {
             $updateData['github_url'] = $request->github_url;
         }
 

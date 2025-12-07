@@ -10,6 +10,7 @@ use App\Models\Project;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Team extends Model
 {
@@ -53,6 +54,22 @@ class Team extends Model
             ->wherePivot('user_id', $userId)
             ->wherePivot('rol', 'lider')
             ->exists();
+    }
+
+    /**
+     * Get all join requests for this team
+     */
+    public function joinRequests(): HasMany
+    {
+        return $this->hasMany(TeamJoinRequest::class);
+    }
+
+    /**
+     * Get pending join requests for this team
+     */
+    public function pendingJoinRequests(): HasMany
+    {
+        return $this->hasMany(TeamJoinRequest::class)->where('status', 'pending');
     }
 
 }

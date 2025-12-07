@@ -23,6 +23,18 @@
             <x-input-error :messages="$errors->get('direccion')" class="mt-2" />
         </div>
 
+        <!-- Rol -->
+        <div class="mt-4">
+            <x-input-label for="rol" value="Tipo de Usuario" />
+            <select id="rol" name="rol" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm" required>
+                <option value="">Selecciona tu rol</option>
+                <option value="Administrador" {{ old('rol') == 'Administrador' ? 'selected' : '' }}>Administrador de Eventos</option>
+                <option value="Participante" {{ old('rol') == 'Participante' ? 'selected' : '' }}>Participante</option>
+            </select>
+            <x-input-error :messages="$errors->get('rol')" class="mt-2" />
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Nota: El rol no se puede cambiar después del registro.</p>
+        </div>
+
         <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />
