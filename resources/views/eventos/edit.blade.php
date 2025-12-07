@@ -16,7 +16,7 @@
             <p class="text-gray-600 dark:text-gray-400 ml-10">Actualiza la información del evento: {{ $evento->nombre }}</p>
         </div>
 
-        <form method="POST" action="{{ route('eventos.update', $evento) }}" class="space-y-6">
+        <form method="POST" action="{{ route('eventos.update', $evento) }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PATCH')
 
@@ -55,24 +55,25 @@
                         <x-input-error :messages="$errors->get('descripcion')" class="mt-2" />
                     </div>
 
-                    <!-- URL Imagen -->
+                    <!-- Imagen del Evento -->
                     <div>
-                        <x-input-label for="url_imagen" value="URL de la Imagen" />
-                        <x-text-input
-                            id="url_imagen"
-                            name="url_imagen"
-                            type="url"
-                            class="mt-1 block w-full"
-                            :value="old('url_imagen', $evento->url_imagen)"
-                            placeholder="https://ejemplo.com/imagen.jpg"
+                        <x-input-label for="image" value="Cambiar Imagen del Evento" />
+                        <input
+                            id="image"
+                            name="image"
+                            type="file"
+                            accept="image/jpeg,image/jpg,image/png"
+                            class="mt-1 block w-full text-sm text-gray-900 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 dark:file:bg-purple-900 dark:file:text-purple-300 dark:hover:file:bg-purple-800 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Opcional: URL de la imagen principal del evento</p>
-                        <x-input-error :messages="$errors->get('url_imagen')" class="mt-2" />
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            Opcional: Sube una nueva imagen (JPG, JPEG, PNG - Máx. 200 MB) - Deja en blanco para mantener la actual
+                        </p>
+                        <x-input-error :messages="$errors->get('image')" class="mt-2" />
 
                         @if($evento->url_imagen)
                         <div class="mt-3">
-                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Vista previa actual:</p>
-                            <img src="{{ $evento->url_imagen }}" alt="{{ $evento->nombre }}" class="w-32 h-32 rounded-lg object-cover border-2 border-gray-200 dark:border-gray-700">
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Imagen actual:</p>
+                            <img src="{{ asset('storage/' . $evento->url_imagen) }}" alt="{{ $evento->nombre }}" class="w-32 h-32 rounded-lg object-cover border-2 border-purple-200 dark:border-purple-700 shadow-md">
                         </div>
                         @endif
                     </div>

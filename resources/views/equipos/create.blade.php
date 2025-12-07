@@ -16,7 +16,7 @@
             <p class="text-gray-600 dark:text-gray-400 ml-10">Forma un equipo para participar en un evento</p>
         </div>
 
-        <form method="POST" action="{{ route('equipos.store') }}" class="space-y-6">
+        <form method="POST" action="{{ route('equipos.store') }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
 
             <!-- Team Information Card -->
@@ -57,20 +57,20 @@
                         <x-input-error :messages="$errors->get('descripcion')" class="mt-2" />
                     </div>
 
-                    <!-- URL Banner -->
+                    <!-- Banner del Equipo -->
                     <div>
-                        <x-input-label for="url_banner" value="URL del Banner del Equipo" />
-                        <x-text-input
-                            id="url_banner"
-                            name="url_banner"
-                            type="url"
-                            class="mt-1 block w-full"
-                            :value="old('url_banner')"
-                            maxlength="255"
-                            placeholder="https://ejemplo.com/banner.jpg"
+                        <x-input-label for="banner" value="Banner del Equipo" />
+                        <input
+                            id="banner"
+                            name="banner"
+                            type="file"
+                            accept="image/jpeg,image/jpg,image/png"
+                            class="mt-1 block w-full text-sm text-gray-900 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 dark:file:bg-purple-900 dark:file:text-purple-300 dark:hover:file:bg-purple-800 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Opcional: URL de la imagen/logo de tu equipo</p>
-                        <x-input-error :messages="$errors->get('url_banner')" class="mt-2" />
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            Opcional: Sube un banner para tu equipo (JPG, JPEG, PNG - Máx. 200 MB)
+                        </p>
+                        <x-input-error :messages="$errors->get('banner')" class="mt-2" />
                     </div>
                 </div>
             </x-card>
@@ -88,7 +88,7 @@
                     
                     <div class="flex items-start gap-4">
                         @if($selectedEvent->url_imagen)
-                            <img src="{{ $selectedEvent->url_imagen }}" alt="{{ $selectedEvent->nombre }}" class="w-16 h-16 rounded-lg object-cover">
+                            <img src="{{ asset('storage/' . $selectedEvent->url_imagen) }}" alt="{{ $selectedEvent->nombre }}" class="w-16 h-16 rounded-lg object-cover">
                         @else
                             <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center text-white text-2xl font-bold">
                                 {{ substr($selectedEvent->nombre ?? 'E', 0, 1) }}

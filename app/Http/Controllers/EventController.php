@@ -53,17 +53,6 @@ class EventController extends Controller
     }
 
     public function store(EventStoreRequest $request){
-        $imagePath = null;
-
-        // Manejar subida de imagen si existe
-        if ($request->hasFile('url_imagen')) {
-            $image = $request->file('url_imagen');
-            $imageName = 'event_' . time() . '.' . $image->getClientOriginalExtension();
-            $imagePath = $image->storeAs('public/events', $imageName);
-            // Convertir a la ruta pública
-            $imagePath = str_replace('public/', 'storage/', $imagePath);
-        }
-
         $event = Event::create([
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
@@ -71,9 +60,24 @@ class EventController extends Controller
             'fecha_fin' => $request->fecha_fin,
             'direccion' => $request->direccion,
             'estado' => $request->estado,
-            'url_imagen' => $imagePath,
+            'url_imagen' => null,
             'admin_id' => auth()->id(),
         ]);
+
+        // Manejar subida de imagen si existe (después de crear el evento para tener el ID)
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $extension = $image->getClientOriginalExtension();
+            $imageName = 'image.' . $extension;
+
+            // Guardar en storage/app/public/events/{event_id}/image.ext
+            $image->storeAs('public/events/' . $event->id, $imageName);
+
+            // Guardar ruta relativa en BD: events/{event_id}/image.ext
+            $event->update([
+                'url_imagen' => 'events/' . $event->id . '/' . $imageName
+            ]);
+        }
 
         // Guardar reglas si existen
         if ($request->has('reglas')) {
@@ -119,18 +123,21 @@ class EventController extends Controller
         ];
 
         // Manejar subida de nueva imagen si existe
-        if ($request->hasFile('url_imagen')) {
-            // Eliminar imagen anterior si existe
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $extension = $image->getClientOriginalExtension();
+            $imageName = 'image.' . $extension;
+
+            // Eliminar imagen anterior si existe (toda la carpeta del evento)
             if ($evento->url_imagen) {
-                $oldImagePath = str_replace('storage/', 'public/', $evento->url_imagen);
-                \Storage::delete($oldImagePath);
+                \Storage::deleteDirectory('public/events/' . $evento->id);
             }
 
-            $image = $request->file('url_imagen');
-            $imageName = 'event_' . $evento->id . '_' . time() . '.' . $image->getClientOriginalExtension();
-            $imagePath = $image->storeAs('public/events', $imageName);
-            // Convertir a la ruta pública
-            $updateData['url_imagen'] = str_replace('public/', 'storage/', $imagePath);
+            // Guardar en storage/app/public/events/{event_id}/image.ext
+            $image->storeAs('public/events/' . $evento->id, $imageName);
+
+            // Guardar ruta relativa en BD: events/{event_id}/image.ext
+            $updateData['url_imagen'] = 'events/' . $evento->id . '/' . $imageName;
         }
 
         $evento->update($updateData);

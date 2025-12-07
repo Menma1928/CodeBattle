@@ -60,26 +60,30 @@ class TeamController extends Controller
             ])->withInput();
         }
 
-        $bannerPath = null;
-
-        // Manejar subida de banner si existe
-        if ($request->hasFile('url_banner')) {
-            $banner = $request->file('url_banner');
-            $bannerName = 'team_' . time() . '.' . $banner->getClientOriginalExtension();
-            $bannerPath = $banner->storeAs('public/teams', $bannerName);
-            // Convertir a la ruta pública
-            $bannerPath = str_replace('public/', 'storage/', $bannerPath);
-        }
-
         $team = Team::create([
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
-            'url_banner' => $bannerPath,
+            'url_banner' => null,
             'event_id' => $request->event_id,
         ]);
 
         // Assign creator as leader
         $team->users()->attach(auth()->id(), ['rol' => 'lider']);
+
+        // Manejar subida de banner si existe (después de crear el equipo para tener el ID)
+        if ($request->hasFile('banner')) {
+            $banner = $request->file('banner');
+            $extension = $banner->getClientOriginalExtension();
+            $bannerName = 'banner.' . $extension;
+
+            // Guardar en storage/app/public/teams/{team_id}/banner.ext
+            $banner->storeAs('public/teams/' . $team->id, $bannerName);
+
+            // Guardar ruta relativa en BD: teams/{team_id}/banner.ext
+            $team->update([
+                'url_banner' => 'teams/' . $team->id . '/' . $bannerName
+            ]);
+        }
 
         return redirect()->route('equipos.show', $team)->with('success', 'Equipo creado exitosamente.');
     }
@@ -96,18 +100,21 @@ class TeamController extends Controller
         ];
 
         // Manejar subida de nuevo banner si existe
-        if ($request->hasFile('url_banner')) {
-            // Eliminar banner anterior si existe
+        if ($request->hasFile('banner')) {
+            $banner = $request->file('banner');
+            $extension = $banner->getClientOriginalExtension();
+            $bannerName = 'banner.' . $extension;
+
+            // Eliminar banner anterior si existe (toda la carpeta del equipo)
             if ($equipo->url_banner) {
-                $oldBannerPath = str_replace('storage/', 'public/', $equipo->url_banner);
-                \Storage::delete($oldBannerPath);
+                \Storage::deleteDirectory('public/teams/' . $equipo->id);
             }
 
-            $banner = $request->file('url_banner');
-            $bannerName = 'team_' . $equipo->id . '_' . time() . '.' . $banner->getClientOriginalExtension();
-            $bannerPath = $banner->storeAs('public/teams', $bannerName);
-            // Convertir a la ruta pública
-            $updateData['url_banner'] = str_replace('public/', 'storage/', $bannerPath);
+            // Guardar en storage/app/public/teams/{team_id}/banner.ext
+            $banner->storeAs('public/teams/' . $equipo->id, $bannerName);
+
+            // Guardar ruta relativa en BD: teams/{team_id}/banner.ext
+            $updateData['url_banner'] = 'teams/' . $equipo->id . '/' . $bannerName;
         }
 
         $equipo->update($updateData);

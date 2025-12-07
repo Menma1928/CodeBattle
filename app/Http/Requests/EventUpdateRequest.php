@@ -26,7 +26,7 @@ class EventUpdateRequest extends FormRequest
             'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
             'direccion' => 'required|string|max:255',
             'estado' => 'required|string|in:pendiente,activo,en_calificacion,finalizado',
-            'url_imagen' => 'nullable|image|mimes:jpg,jpeg,png|max:204800', // 200 MB = 204800 KB
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:204800', // 200 MB = 204800 KB
             'reglas' => 'nullable|array',
             'reglas.*' => 'nullable|string|max:500',
             'requisitos' => 'nullable|array',

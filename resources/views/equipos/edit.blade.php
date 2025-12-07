@@ -13,16 +13,16 @@
                 </a>
                 <x-page-title>Editar Equipo</x-page-title>
             </div>
-            <p class="text-gray-600 dark:text-gray-400 ml-10">Actualiza la información del equipo: {{ $equipo->nombre }}</p>
+            <p class="text-gray-600 dark:text-gray-400 ml-10">Actualiza la informaciï¿½n del equipo: {{ $equipo->nombre }}</p>
         </div>
 
-        <form method="POST" action="{{ route('equipos.update', $equipo) }}" class="space-y-6">
+        <form method="POST" action="{{ route('equipos.update', $equipo) }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PATCH')
 
             <!-- Team Information Card -->
             <x-card>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Información del Equipo</h3>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Informaciï¿½n del Equipo</h3>
 
                 <div class="space-y-6">
                     <!-- Nombre -->
@@ -42,9 +42,9 @@
                         <x-input-error :messages="$errors->get('nombre')" class="mt-2" />
                     </div>
 
-                    <!-- Descripción -->
+                    <!-- Descripciï¿½n -->
                     <div>
-                        <x-input-label for="descripcion" value="Descripción del Equipo *" />
+                        <x-input-label for="descripcion" value="Descripciï¿½n del Equipo *" />
                         <textarea
                             id="descripcion"
                             name="descripcion"
@@ -54,29 +54,29 @@
                             required
                             placeholder="Describe tu equipo, habilidades y objetivos..."
                         >{{ old('descripcion', $equipo->descripcion) }}</textarea>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Máximo 1000 caracteres</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Mï¿½ximo 1000 caracteres</p>
                         <x-input-error :messages="$errors->get('descripcion')" class="mt-2" />
                     </div>
 
-                    <!-- URL Banner -->
+                    <!-- Banner del Equipo -->
                     <div>
-                        <x-input-label for="url_banner" value="URL del Banner del Equipo" />
-                        <x-text-input
-                            id="url_banner"
-                            name="url_banner"
-                            type="url"
-                            class="mt-1 block w-full"
-                            :value="old('url_banner', $equipo->url_banner)"
-                            maxlength="255"
-                            placeholder="https://ejemplo.com/banner.jpg"
+                        <x-input-label for="banner" value="Banner del Equipo" />
+                        <input
+                            id="banner"
+                            name="banner"
+                            type="file"
+                            accept="image/jpeg,image/jpg,image/png"
+                            class="mt-1 block w-full text-sm text-gray-900 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 dark:file:bg-purple-900 dark:file:text-purple-300 dark:hover:file:bg-purple-800 border border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Opcional: URL de la imagen/logo de tu equipo</p>
-                        <x-input-error :messages="$errors->get('url_banner')" class="mt-2" />
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            Opcional: Sube un nuevo banner para tu equipo (JPG, JPEG, PNG - MÃ¡x. 200 MB)
+                        </p>
+                        <x-input-error :messages="$errors->get('banner')" class="mt-2" />
 
                         @if($equipo->url_banner)
                         <div class="mt-3">
                             <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Banner actual:</p>
-                            <img src="{{ $equipo->url_banner }}" alt="{{ $equipo->nombre }}" class="w-40 h-40 rounded-xl object-cover border-2 border-gray-200 dark:border-gray-700 shadow-md">
+                            <img src="{{ asset('storage/' . $equipo->url_banner) }}" alt="{{ $equipo->nombre }}" class="w-40 h-40 rounded-xl object-cover border-2 border-gray-200 dark:border-gray-700 shadow-md">
                         </div>
                         @endif
                     </div>
@@ -89,7 +89,7 @@
 
                 <div class="flex items-start gap-4">
                     @if($equipo->event->url_imagen)
-                        <img src="{{ $equipo->event->url_imagen }}" alt="{{ $equipo->event->nombre }}" class="w-16 h-16 rounded-lg object-cover">
+                        <img src="{{ asset('storage/' . $equipo->event->url_imagen) }}" alt="{{ $equipo->event->nombre }}" class="w-16 h-16 rounded-lg object-cover">
                     @else
                         <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center text-white text-2xl font-bold">
                             {{ substr($equipo->event->nombre, 0, 1) }}
@@ -113,13 +113,13 @@
                 </div>
 
                 <p class="mt-3 text-sm text-gray-500 dark:text-gray-400 italic">
-                    Los equipos no pueden cambiar de evento después de ser creados
+                    Los equipos no pueden cambiar de evento despuï¿½s de ser creados
                 </p>
             </x-card>
 
             <!-- Team Stats Card -->
             <x-card class="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-purple-200 dark:border-purple-800">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Estadísticas del Equipo</h3>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Estadï¿½sticas del Equipo</h3>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
@@ -137,7 +137,7 @@
                                 -
                             @endif
                         </div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Posición</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Posiciï¿½n</div>
                     </div>
                 </div>
             </x-card>
@@ -151,7 +151,7 @@
                 </a>
                 <div class="flex flex-col sm:flex-row gap-4">
                     @can('eliminar equipos')
-                    <form method="POST" action="{{ route('equipos.destroy', $equipo) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este equipo? Esta acción no se puede deshacer y se eliminarán todos los miembros.');" class="w-full sm:w-auto">
+                    <form method="POST" action="{{ route('equipos.destroy', $equipo) }}" onsubmit="return confirm('ï¿½Estï¿½s seguro de que deseas eliminar este equipo? Esta acciï¿½n no se puede deshacer y se eliminarï¿½n todos los miembros.');" class="w-full sm:w-auto">
                         @csrf
                         @method('DELETE')
                         <x-danger-button type="submit" class="w-full">

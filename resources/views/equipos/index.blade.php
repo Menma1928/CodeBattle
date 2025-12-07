@@ -57,7 +57,7 @@
                     <!-- Team Banner/Logo -->
                     <a href="{{ route('equipos.show', $team) }}" class="flex-shrink-0">
                         @if($team->url_banner)
-                            <img src="{{ $team->url_banner }}" alt="{{ $team->nombre }}" class="w-24 h-24 rounded-xl object-cover group-hover:scale-105 transition-transform duration-200">
+                            <img src="{{ asset('storage/' . $team->url_banner) }}" alt="{{ $team->nombre }}" class="w-24 h-24 rounded-xl object-cover group-hover:scale-105 transition-transform duration-200">
                         @else
                             <div class="w-24 h-24 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center text-white text-3xl font-bold group-hover:scale-105 transition-transform duration-200">
                                 {{ substr($team->nombre, 0, 1) }}

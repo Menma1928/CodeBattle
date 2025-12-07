@@ -23,7 +23,7 @@ class TeamStoreRequest extends FormRequest
         return [
             'nombre' => 'required|string|max:255',
             'descripcion' => 'required|string|max:1000',
-            'url_banner' => 'nullable|image|mimes:jpg,jpeg,png|max:204800', // 200 MB = 204800 KB
+            'banner' => 'nullable|image|mimes:jpg,jpeg,png|max:204800', // 200 MB = 204800 KB
             'event_id' => 'required|exists:events,id',
         ];
     }
@@ -49,7 +49,7 @@ class TeamStoreRequest extends FormRequest
         return [
             'nombre' => 'nombre del equipo',
             'descripcion' => 'descripción',
-            'url_banner' => 'URL del banner',
+            'banner' => 'banner del equipo',
             'event_id' => 'evento',
         ];
     }

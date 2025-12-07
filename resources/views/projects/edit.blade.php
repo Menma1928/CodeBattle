@@ -24,7 +24,7 @@
             <x-card class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200 dark:border-purple-800">
                 <div class="flex items-center gap-4">
                     @if($project->team->url_banner)
-                        <img src="{{ $project->team->url_banner }}" alt="{{ $project->team->nombre }}" class="w-20 h-20 rounded-xl object-cover">
+                        <img src="{{ asset('storage/' . $project->team->url_banner) }}" alt="{{ $project->team->nombre }}" class="w-20 h-20 rounded-xl object-cover">
                     @else
                         <div class="w-20 h-20 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center text-white text-3xl font-bold">
                             {{ substr($project->team->nombre, 0, 1) }}
