@@ -226,10 +226,11 @@ class EventController extends Controller
         $this->authorize('manageJuries', $evento);
         $evento->load('juries');
 
-        // Solo mostrar usuarios con rol de Administrador o Super Admin
+        // Solo mostrar usuarios con rol de Administrador o Super Admin, excluyendo al creador del evento
         $availableUsers = User::whereDoesntHave('juryEvents', function($query) use ($evento) {
             $query->where('event_id', $evento->id);
         })
+        ->where('id', '!=', $evento->admin_id)
         ->where(function($query) {
             $query->whereHas('roles', function($q) {
                 $q->whereIn('name', ['Administrador', 'Super Admin']);
