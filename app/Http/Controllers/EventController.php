@@ -391,6 +391,7 @@ class EventController extends Controller
     }
 
     /**
+<<<<<<< HEAD
      * Finalizar el evento (cambiar estado a finalizado)
      */
     public function finalize(Event $evento)
@@ -406,6 +407,46 @@ class EventController extends Controller
         $evento->update(['estado' => 'finalizado']);
 
         return redirect()->route('eventos.show', $evento)->with('success', 'El evento ha sido finalizado exitosamente. Los jurados ya no podrán calificar.');
+=======
+     * Generate participation certificate PDF for a user in an event
+     */
+    public function generateCertificate(Event $evento)
+    {
+        // Verify event is finished
+        if ($evento->estado !== 'finalizado') {
+            return redirect()->back()->withErrors([
+                'error' => 'Solo se pueden generar constancias de eventos finalizados.'
+            ]);
+        }
+
+        // Get user's team in this event
+        $team = auth()->user()->teams()
+            ->where('event_id', $evento->id)
+            ->first();
+
+        if (!$team) {
+            return redirect()->back()->withErrors([
+                'error' => 'No participaste en este evento.'
+            ]);
+        }
+
+        // Load event data
+        $evento->load('admin');
+
+        // Prepare data for PDF
+        $data = [
+            'evento' => $evento,
+            'team' => $team,
+            'user' => auth()->user(),
+            'fecha_generacion' => now()->format('d/m/Y'),
+        ];
+
+        // Generate PDF
+        $pdf = \PDF::loadView('pdf.certificate', $data);
+
+        // Return PDF download
+        return $pdf->download('Constancia_' . $evento->nombre . '_' . $team->nombre . '.pdf');
+>>>>>>> 9f8370e (Primera modificación (agregar el comando para instalar DomPDF))
     }
 
 }

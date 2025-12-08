@@ -28,7 +28,11 @@ Route::middleware('auth')->group(function () {
         Route::delete('/eventos/{evento}/remove-jury/{user}', [EventController::class, 'removeJury'])->name('eventos.removeJury');
         Route::get('/eventos/{evento}/dashboard', [EventController::class, 'dashboard'])->name('eventos.dashboard');
         Route::post('/eventos/{evento}/assign-positions', [EventController::class, 'assignPositions'])->name('eventos.assignPositions');
+<<<<<<< HEAD
         Route::post('/eventos/{evento}/finalize', [EventController::class, 'finalize'])->name('eventos.finalize');
+=======
+        Route::get('/eventos/{evento}/certificate', [EventController::class, 'generateCertificate'])->name('eventos.certificate');
+>>>>>>> 9f8370e (Primera modificación (agregar el comando para instalar DomPDF))
     });
     Route::get('/mis-eventos', [EventController::class, 'myEvents'])->name('eventos.misEventos')->middleware(['permission:ver mis eventos']);
     Route::group(['middleware' => ['permission:ver equipos']], function(){
