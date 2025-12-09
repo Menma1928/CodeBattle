@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Team;
 use App\Models\TeamJoinRequest;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\NewJoinRequestMail;
+use App\Mail\JoinRequestAcceptedMail;
 
 class TeamJoinRequestController extends Controller
 {
@@ -61,12 +64,20 @@ class TeamJoinRequestController extends Controller
         }
 
         // Crear la solicitud
-        TeamJoinRequest::create([
+        $joinRequest = TeamJoinRequest::create([
             'team_id' => $team->id,
             'user_id' => $user->id,
             'status' => 'pending',
             'message' => $request->input('message'),
         ]);
+
+        // Obtener el líder del equipo
+        $leader = $team->users()->wherePivot('rol', 'lider')->first();
+
+        // Enviar correo al líder del equipo
+        if ($leader && $leader->email) {
+            Mail::to($leader->email)->send(new NewJoinRequestMail($joinRequest, $team, $user));
+        }
 
         return redirect()->back()->with('success', 'Solicitud enviada exitosamente. El líder del equipo la revisará.');
     }
@@ -118,6 +129,14 @@ class TeamJoinRequestController extends Controller
             // Marcar la solicitud como aceptada
             $request->update(['status' => 'accepted']);
         });
+
+        // Cargar relación del equipo con el evento
+        $team->load('event', 'users');
+
+        // Enviar correo al usuario notificándole que fue aceptado
+        if ($request->user && $request->user->email) {
+            Mail::to($request->user->email)->send(new JoinRequestAcceptedMail($team, $request->user));
+        }
 
         return redirect()->back()->with('success', 'Solicitud aceptada. El usuario ha sido añadido al equipo.');
     }
