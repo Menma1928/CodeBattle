@@ -30,7 +30,7 @@ class TeamSeeder extends Seeder
                 foreach ($teams as $team) {
                     // Solo agregar usuarios si el equipo no tiene miembros
                     if ($team->users()->count() === 0) {
-                        $userIDs = User::all()->random(min(5, User::count()))->pluck('id');
+                        $userIDs = User::all()->random(min(rand(3,5), User::count()))->pluck('id');
                         $team->users()->attach($userIDs);
                     }
                 }
