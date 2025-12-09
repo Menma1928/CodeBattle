@@ -13,7 +13,7 @@
                 </a>
                 <x-page-title>Editar Equipo</x-page-title>
             </div>
-            <p class="text-gray-600 dark:text-gray-400 ml-10">Actualiza la informaci�n del equipo: {{ $equipo->nombre }}</p>
+            <p class="text-gray-600 dark:text-gray-400 ml-10">Actualiza la información del equipo: {{ $equipo->nombre }}</p>
         </div>
 
         <form method="POST" action="{{ route('equipos.update', $equipo) }}" enctype="multipart/form-data" class="space-y-6">
@@ -22,7 +22,7 @@
 
             <!-- Team Information Card -->
             <x-card>
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Informaci�n del Equipo</h3>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Información del Equipo</h3>
 
                 <div class="space-y-6">
                     <!-- Nombre -->
@@ -42,9 +42,9 @@
                         <x-input-error :messages="$errors->get('nombre')" class="mt-2" />
                     </div>
 
-                    <!-- Descripci�n -->
+                    <!-- Descripción -->
                     <div>
-                        <x-input-label for="descripcion" value="Descripci�n del Equipo *" />
+                        <x-input-label for="descripcion" value="Descripción del Equipo *" />
                         <textarea
                             id="descripcion"
                             name="descripcion"
@@ -54,7 +54,7 @@
                             required
                             placeholder="Describe tu equipo, habilidades y objetivos..."
                         >{{ old('descripcion', $equipo->descripcion) }}</textarea>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">M�ximo 1000 caracteres</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Máximo 1000 caracteres</p>
                         <x-input-error :messages="$errors->get('descripcion')" class="mt-2" />
                     </div>
 
@@ -113,13 +113,13 @@
                 </div>
 
                 <p class="mt-3 text-sm text-gray-500 dark:text-gray-400 italic">
-                    Los equipos no pueden cambiar de evento despu�s de ser creados
+                    Los equipos no pueden cambiar de evento después de ser creados
                 </p>
             </x-card>
 
             <!-- Team Stats Card -->
             <x-card class="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-purple-200 dark:border-purple-800">
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Estad�sticas del Equipo</h3>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Estadísticas del Equipo</h3>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="text-center p-4 bg-white dark:bg-gray-800 rounded-lg">
@@ -137,7 +137,7 @@
                                 -
                             @endif
                         </div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Posici�n</div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">Posición</div>
                     </div>
                 </div>
             </x-card>
@@ -151,7 +151,7 @@
                 </a>
                 <div class="flex flex-col sm:flex-row gap-4">
                     @can('eliminar equipos')
-                    <form method="POST" action="{{ route('equipos.destroy', $equipo) }}" onsubmit="return confirm('�Est�s seguro de que deseas eliminar este equipo? Esta acci�n no se puede deshacer y se eliminar�n todos los miembros.');" class="w-full sm:w-auto">
+                    <form method="POST" action="{{ route('equipos.destroy', $equipo) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este equipo? Esta acción no se puede deshacer y se eliminarán todos los miembros.');" class="w-full sm:w-auto">
                         @csrf
                         @method('DELETE')
                         <x-danger-button type="submit" class="w-full">
