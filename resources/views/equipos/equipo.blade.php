@@ -24,7 +24,12 @@
                     <!-- Team Banner -->
                     <div class="flex-shrink-0">
                         @if($equipo->url_banner)
-                            <img src="{{ asset('storage/' . $equipo->url_banner) }}" alt="{{ $equipo->nombre }}" class="w-40 h-40 rounded-xl object-cover shadow-md">
+                            @php
+                                $bannerUrl = str_starts_with($equipo->url_banner, 'http')
+                                    ? $equipo->url_banner
+                                    : asset('storage/' . $equipo->url_banner);
+                            @endphp
+                            <img src="{{ $bannerUrl }}" alt="{{ $equipo->nombre }}" class="w-40 h-40 rounded-xl object-cover shadow-md">
                         @else
                             <div class="w-40 h-40 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center text-white text-6xl font-bold shadow-md">
                                 {{ substr($equipo->nombre ?? 'E', 0, 1) }}

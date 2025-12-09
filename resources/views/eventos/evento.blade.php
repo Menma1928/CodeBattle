@@ -24,7 +24,12 @@
                     <!-- Event Logo/Image -->
                     <div class="flex-shrink-0">
                         @if($evento->url_imagen)
-                            <img src="{{ asset('storage/' . $evento->url_imagen) }}" alt="{{ $evento->nombre }}" class="w-32 h-32 rounded-xl object-cover shadow-md">
+                            @php
+                                $imagenUrl = str_starts_with($evento->url_imagen, 'http')
+                                    ? $evento->url_imagen
+                                    : asset('storage/' . $evento->url_imagen);
+                            @endphp
+                            <img src="{{ $imagenUrl }}" alt="{{ $evento->nombre }}" class="w-32 h-32 rounded-xl object-cover shadow-md">
                         @else
                             <div class="w-32 h-32 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center text-white text-5xl font-bold shadow-md">
                                 {{ substr($evento->nombre ?? 'E', 0, 1) }}
@@ -264,7 +269,12 @@
                             <!-- Team Banner -->
                             <a href="{{ route('equipos.show', $team) }}" class="flex-shrink-0">
                                 @if($team->url_banner)
-                                    <img src="{{ asset('storage/' . $team->url_banner) }}" alt="{{ $team->nombre }}" class="w-28 h-28 rounded-xl object-cover group-hover:scale-105 transition-transform duration-200">
+                                    @php
+                                        $bannerUrl = str_starts_with($team->url_banner, 'http')
+                                            ? $team->url_banner
+                                            : asset('storage/' . $team->url_banner);
+                                    @endphp
+                                    <img src="{{ $bannerUrl }}" alt="{{ $team->nombre }}" class="w-28 h-28 rounded-xl object-cover group-hover:scale-105 transition-transform duration-200">
                                 @else
                                     <div class="w-28 h-28 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center text-white text-4xl font-bold group-hover:scale-105 transition-transform duration-200">
                                         {{ substr($team->nombre, 0, 1) }}
