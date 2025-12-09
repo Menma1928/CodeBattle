@@ -17,49 +17,51 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        // Crear roles (o recuperarlos si ya existen)
+        $super_admin_role = Role::firstOrCreate(['name' => 'Super Admin']);
+        $administrador_role = Role::firstOrCreate(['name' => 'Administrador']);
+        $participante_role = Role::firstOrCreate(['name' => 'Participante']);
 
-        $super_admin_role = Role::create(['name' => 'Super Admin']);
-        $administrador_role = Role::create(['name' => 'Administrador']);
-        $participante_role = Role::create(['name' => 'Participante']);
+        // Crear permisos de eventos
+        Permission::firstOrCreate(['name' => 'ver eventos']);
+        Permission::firstOrCreate(['name' => 'crear eventos']);
+        Permission::firstOrCreate(['name' => 'editar eventos']);
+        Permission::firstOrCreate(['name' => 'eliminar eventos']);
+        Permission::firstOrCreate(['name' => 'ver mis eventos']);
+        Permission::firstOrCreate(['name' => 'inscribirse eventos']);
 
+        // Crear permisos de equipos
+        Permission::firstOrCreate(['name' => 'ver equipos']);
+        Permission::firstOrCreate(['name' => 'crear equipos']);
+        Permission::firstOrCreate(['name' => 'editar equipos']);
+        Permission::firstOrCreate(['name' => 'eliminar equipos']);
+        Permission::firstOrCreate(['name' => 'ver mis equipos']);
+        Permission::firstOrCreate(['name' => 'unirse equipos']);
+        Permission::firstOrCreate(['name' => 'invitar miembros']);
+        Permission::firstOrCreate(['name' => 'expulsar miembros']);
 
-        Permission::create(['name' => 'ver eventos']);
-        Permission::create(['name' => 'crear eventos']);
-        Permission::create(['name' => 'editar eventos']);
-        Permission::create(['name' => 'eliminar eventos']);
-        Permission::create(['name' => 'ver mis eventos']);
-        Permission::create(['name' => 'inscribirse eventos']);
+        // Crear permisos de usuarios
+        Permission::firstOrCreate(['name' => 'ver usuarios']);
+        Permission::firstOrCreate(['name' => 'crear usuarios']);
+        Permission::firstOrCreate(['name' => 'editar usuarios']);
+        Permission::firstOrCreate(['name' => 'eliminar usuarios']);
+        Permission::firstOrCreate(['name' => 'asignar roles']);
 
+        // Crear permisos de participación
+        Permission::firstOrCreate(['name' => 'participar competencias']);
+        Permission::firstOrCreate(['name' => 'enviar soluciones']);
+        Permission::firstOrCreate(['name' => 'ver resultados']);
+        Permission::firstOrCreate(['name' => 'ver ranking']);
 
-        Permission::create(['name' => 'ver equipos']);
-        Permission::create(['name' => 'crear equipos']);
-        Permission::create(['name' => 'editar equipos']);
-        Permission::create(['name' => 'eliminar equipos']);
-        Permission::create(['name' => 'ver mis equipos']);
-        Permission::create(['name' => 'unirse equipos']);
-        Permission::create(['name' => 'invitar miembros']);
-        Permission::create(['name' => 'expulsar miembros']);
+        // Crear permisos de administración
+        Permission::firstOrCreate(['name' => 'gestionar permisos']);
+        Permission::firstOrCreate(['name' => 'ver reportes']);
+        Permission::firstOrCreate(['name' => 'moderar contenido']);
 
-        Permission::create(['name' => 'ver usuarios']);
-        Permission::create(['name' => 'crear usuarios']);
-        Permission::create(['name' => 'editar usuarios']);
-        Permission::create(['name' => 'eliminar usuarios']);
-        Permission::create(['name' => 'asignar roles']);
+        // Asignar permisos a roles (sincronizar para evitar duplicados)
+        $super_admin_role->syncPermissions(Permission::all());
 
-        Permission::create(['name' => 'participar competencias']);
-        Permission::create(['name' => 'enviar soluciones']);
-        Permission::create(['name' => 'ver resultados']);
-        Permission::create(['name' => 'ver ranking']);
-
-
-        Permission::create(['name' => 'gestionar permisos']);
-        Permission::create(['name' => 'ver reportes']);
-        Permission::create(['name' => 'moderar contenido']);
-
-
-        $super_admin_role->givePermissionTo(Permission::all());
-
-        $administrador_role->givePermissionTo([
+        $administrador_role->syncPermissions([
             'ver eventos',
             'crear eventos',
             'ver mis eventos',
@@ -70,7 +72,7 @@ class UserSeeder extends Seeder
             'ver reportes',
         ]);
 
-        $participante_role->givePermissionTo([
+        $participante_role->syncPermissions([
             'ver equipos',
             'ver eventos',
             'inscribirse eventos',
@@ -84,36 +86,58 @@ class UserSeeder extends Seeder
             'ver ranking',
         ]);
 
-
-        $super_admin_user = User::create([
-            'name' => 'Super Admin',
-            'email' => 'superadmin@gmail.com',
-            'password' => bcrypt('12345678'),
-        ]);
-        $super_admin_user->assignRole('Super Admin');
-
-        $admin_user = User::create([
-            'name' => 'Administrador',
-            'email' => 'administrador@gmail.com',
-            'password' => bcrypt('12345678'),
-        ]);
-        $admin_user->assignRole('Administrador');
-
-        $participante_user = User::create([
-            'name' => 'Participante',
-            'email' => 'participante@gmail.com',
-            'password' => bcrypt('12345678'),
-        ]);
-        $participante_user->assignRole('Participante');
-
-        $users = User::factory(80)->create();
-        foreach ($users as $user) {
-            $user->assignRole('Participante');
+        // Crear usuarios de prueba (o recuperarlos si ya existen)
+        $super_admin_user = User::firstOrCreate(
+            ['email' => 'superadmin@gmail.com'],
+            [
+                'name' => 'Super Admin',
+                'password' => bcrypt('12345678'),
+            ]
+        );
+        if (!$super_admin_user->hasRole('Super Admin')) {
+            $super_admin_user->assignRole('Super Admin');
         }
-        $users = User::factory(80)->create();
-        foreach ($users as $user) {
-            $user->assignRole('Administrador');
+
+        $admin_user = User::firstOrCreate(
+            ['email' => 'administrador@gmail.com'],
+            [
+                'name' => 'Administrador',
+                'password' => bcrypt('12345678'),
+            ]
+        );
+        if (!$admin_user->hasRole('Administrador')) {
+            $admin_user->assignRole('Administrador');
         }
-        
+
+        $participante_user = User::firstOrCreate(
+            ['email' => 'participante@gmail.com'],
+            [
+                'name' => 'Participante',
+                'password' => bcrypt('12345678'),
+            ]
+        );
+        if (!$participante_user->hasRole('Participante')) {
+            $participante_user->assignRole('Participante');
+        }
+
+        // Solo crear usuarios adicionales si no existen muchos ya
+        $currentUserCount = User::count();
+        if ($currentUserCount < 163) { // 3 usuarios base + 160 adicionales
+            $participantesToCreate = max(0, 83 - User::role('Participante')->count());
+            if ($participantesToCreate > 0) {
+                $users = User::factory($participantesToCreate)->create();
+                foreach ($users as $user) {
+                    $user->assignRole('Participante');
+                }
+            }
+            
+            $administradoresCrear = max(0, 80 - User::role('Administrador')->count());
+            if ($administradoresCrear > 0) {
+                $users = User::factory($administradoresCrear)->create();
+                foreach ($users as $user) {
+                    $user->assignRole('Administrador');
+                }
+            }
+        }
     }
 }

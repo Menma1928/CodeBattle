@@ -16,9 +16,12 @@ class ProjectSeeder extends Seeder
     {
         $teams = Team::all();
         foreach($teams as $team){
-            Project::factory()->create([
-                'team_id' => $team->id,
-            ]);
+            // Solo crear proyecto si el equipo no tiene uno ya
+            if (!$team->project) {
+                Project::factory()->create([
+                    'team_id' => $team->id,
+                ]);
+            }
         }
     }
 }

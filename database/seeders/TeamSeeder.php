@@ -17,12 +17,23 @@ class TeamSeeder extends Seeder
     {
         $events = Event::all();
         foreach($events as $event){
-            $teams = Team::factory(10)->create([
-                'event_id' => $event->id,
-            ]);
-            foreach ($teams as $team) {
-                $userIDs = User::all()->random(5)->pluck('id');
-                $team->users()->attach($userIDs);
+            // Verificar cuántos equipos ya tiene este evento
+            $existingTeamsCount = $event->teams()->count();
+            $targetTeamsCount = 10;
+            
+            if ($existingTeamsCount < $targetTeamsCount) {
+                $teamsToCreate = $targetTeamsCount - $existingTeamsCount;
+                $teams = Team::factory($teamsToCreate)->create([
+                    'event_id' => $event->id,
+                ]);
+                
+                foreach ($teams as $team) {
+                    // Solo agregar usuarios si el equipo no tiene miembros
+                    if ($team->users()->count() === 0) {
+                        $userIDs = User::all()->random(min(5, User::count()))->pluck('id');
+                        $team->users()->attach($userIDs);
+                    }
+                }
             }
         }
     }

@@ -13,6 +13,13 @@ class EventSeeder extends Seeder
      */
     public function run(): void
     {
-        Event::factory(20)->create();
+        // Solo crear eventos si no existen muchos ya
+        $currentEventCount = Event::count();
+        $targetEventCount = 20;
+        
+        if ($currentEventCount < $targetEventCount) {
+            $eventsToCreate = $targetEventCount - $currentEventCount;
+            Event::factory($eventsToCreate)->create();
+        }
     }
 }

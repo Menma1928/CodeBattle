@@ -18,16 +18,29 @@ class RequirementSeeder extends Seeder
     {
         $events = Event::all();
         foreach($events as $event){
+            // Verificar cuántos requisitos ya tiene este evento
+            $existingRequirementsCount = $event->requirements()->count();
+            $targetRequirementsCount = 10;
+            
+            if ($existingRequirementsCount < $targetRequirementsCount) {
+                $requirementsToCreate = $targetRequirementsCount - $existingRequirementsCount;
+                $newRequirements = Requirement::factory($requirementsToCreate)->create([
+                    'event_id' => $event->id,
+                ]);
+            }
+            
+            // Obtener todos los requisitos del evento
+            $requirementIDs = $event->requirements->pluck('id');
             $teams = $event->teams;
-            $requirements = Requirement::factory(10)->create([
-                'event_id' => $event->id,
-            ]);
-            $requirementIDs = $requirements->pluck('id');
+            
             foreach($teams as $team){
                 $project = $team->project;
                 if($project){
                     foreach($requirementIDs as $requirementID){
-                    $project->requirements()->attach($requirementID, ['rating' => rand(1,10)]);
+                        // Solo adjuntar si no existe la relación
+                        if (!$project->requirements()->where('requirement_id', $requirementID)->exists()) {
+                            $project->requirements()->attach($requirementID, ['rating' => rand(1,10)]);
+                        }
                     }
                 }
             }
