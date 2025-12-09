@@ -1,19 +1,23 @@
-
+@auth
 <nav x-data="{ open: false }" class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border-b border-purple-100 dark:border-gray-700 sticky top-0 z-50 shadow-sm">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex items-center">
                 <!-- Logo -->
-                <a href="{{ route('dashboard') }}" class="flex items-center space-x-2 mr-8">
-                    <div class="w-8 h-8 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                        <span class="text-white font-bold text-xl">C</span>
-                    </div>
+                <a href="/" class="flex items-center space-x-2 mr-8">
+                    <img src="/logo.png" alt="CodeBattle Logo" class="w-8 h-8 rounded-lg object-contain bg-white" />
                     <span class="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">CodeBattle</span>
                 </a>
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-1 sm:flex items-center">
+                    <!-- Dashboard Link -->
+                    <a href="{{ route('dashboard') }}"
+                       class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 {{ request()->routeIs('dashboard') ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20' }}">
+                        Dashboard
+                    </a>
+
                     @hasrole('Super Admin')
                         <a href="{{ route('equipos.index') }}"
                            class="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 {{ request()->routeIs('equipos.index') ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20' }}">
@@ -96,6 +100,11 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-white dark:bg-gray-800 border-t border-purple-100 dark:border-gray-700">
         <div class="pt-2 pb-3 space-y-1 px-2">
+            <!-- Dashboard Link -->
+            <a href="{{ route('dashboard') }}" class="block px-4 py-2 rounded-lg text-sm font-semibold {{ request()->routeIs('dashboard') ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' : 'text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20' }}">
+                Dashboard
+            </a>
+
             @hasrole('Super Admin')
                 <a href="{{ route('equipos.index') }}" class="block px-4 py-2 rounded-lg text-sm font-semibold {{ request()->routeIs('equipos.index') ? 'bg-purple-100 text-purple-700' : 'text-gray-700 hover:bg-purple-50' }}">
                     Equipos
@@ -154,3 +163,4 @@
         </div>
     </div>
 </nav>
+@endauth

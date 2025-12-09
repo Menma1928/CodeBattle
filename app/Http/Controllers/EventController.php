@@ -62,9 +62,33 @@ class EventController extends Controller
         $this->updateEventStatuses();
         
         $title = "Mis Eventos";
-        $events = Event::with('teams')
+        
+        // Obtener eventos donde el usuario es administrador
+        $adminEvents = Event::with('teams', 'juries')
             ->where('admin_id', auth()->id())
-            ->paginate(10);
+            ->get();
+        
+        // Obtener eventos donde el usuario es jurado
+        $juryEvents = Event::with('teams', 'juries')
+            ->whereHas('juries', function($query) {
+                $query->where('user_id', auth()->id());
+            })
+            ->get();
+        
+        // Combinar ambos resultados y eliminar duplicados
+        $events = $adminEvents->merge($juryEvents)->unique('id');
+        
+        // Paginar manualmente
+        $currentPage = request()->get('page', 1);
+        $perPage = 10;
+        $events = new \Illuminate\Pagination\LengthAwarePaginator(
+            $events->forPage($currentPage, $perPage),
+            $events->count(),
+            $perPage,
+            $currentPage,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+        
         return view('eventos.index', compact('events', 'title'));
     }
 
@@ -141,6 +165,7 @@ class EventController extends Controller
 
     public function edit(Event $evento){
         $this->authorize('update', $evento);
+        $evento->load('eventRules', 'requirements');
         return view('eventos.edit', compact('evento'));
     }
 
@@ -148,11 +173,15 @@ class EventController extends Controller
         $updateData = [
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
-            'fecha_inicio' => $request->fecha_inicio,
             'fecha_fin' => $request->fecha_fin,
             'direccion' => $request->direccion,
             // El estado se actualiza automáticamente según las fechas, no desde el formulario
         ];
+
+        // Solo permitir actualizar fecha_inicio si el evento está pendiente
+        if ($evento->estado === 'pendiente') {
+            $updateData['fecha_inicio'] = $request->fecha_inicio;
+        }
 
         // Manejar subida de nueva imagen si existe
         if ($request->hasFile('image')) {
@@ -519,19 +548,24 @@ class EventController extends Controller
         ->where('event_id', $evento->id)
         ->get();
 
-        // Prepare data for Excel
+        // Prepare data for CSV
         $data = [];
+        
+        // Header lines
         $data[] = ['Reporte de Evento: ' . $evento->nombre];
         $data[] = ['Fecha de generación: ' . now()->format('d/m/Y H:i')];
         $data[] = ['Administrador: ' . $evento->admin->name];
-        $data[] = [];
         
-        // Headers
-        $headers = ['#', 'Equipo', 'Líder', 'Calificación Promedio', 'Posición'];
-        foreach ($evento->requirements as $req) {
-            $headers[] = $req->nombre;
-        }
+        // Column headers
+        $headers = ['', '', '', '', '', 'promedio de los requisitos'];
         $data[] = $headers;
+        
+        // Sub-headers
+        $subHeaders = ['#', 'Equipo', 'Líder', 'Calificación Promedio', 'Posición'];
+        foreach ($evento->requirements as $req) {
+            $subHeaders[] = $req->name;
+        }
+        $data[] = $subHeaders;
 
         // Team data
         foreach ($teams as $index => $team) {
@@ -539,14 +573,15 @@ class EventController extends Controller
                 $index + 1,
                 $team->nombre,
                 $team->users->first()?->name ?? 'Sin líder',
-                $team->project ? $team->project->getAverageRating() : 0,
+                $team->project ? number_format($team->project->getAverageRating(), 1) : 0,
                 $team->posicion ?? '-'
             ];
 
             // Add requirement averages
             if ($team->project) {
                 foreach ($evento->requirements as $req) {
-                    $row[] = $team->project->getRequirementAverage($req->id);
+                    $avg = $team->project->getRequirementAverage($req->id);
+                    $row[] = $avg ? number_format($avg, 1) : '-';
                 }
             } else {
                 foreach ($evento->requirements as $req) {
@@ -557,9 +592,12 @@ class EventController extends Controller
             $data[] = $row;
         }
 
-        // Create CSV content
+        // Create CSV content with UTF-8 BOM for Excel compatibility
         $filename = 'Reporte_' . $evento->nombre . '_' . now()->format('Y-m-d') . '.csv';
         $handle = fopen('php://temp', 'r+');
+        
+        // Add UTF-8 BOM for Excel
+        fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
         
         foreach ($data as $row) {
             fputcsv($handle, $row);
@@ -570,7 +608,7 @@ class EventController extends Controller
         fclose($handle);
 
         return response($csv, 200, [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }

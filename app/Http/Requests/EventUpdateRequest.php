@@ -19,10 +19,18 @@ class EventUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        $evento = $this->route('evento');
+        
+        // La fecha de inicio solo es requerida y editable si el evento está pendiente
+        $fechaInicioRules = 'nullable|date|after_or_equal:today';
+        if ($evento && $evento->estado === 'pendiente') {
+            $fechaInicioRules = 'required|date|after_or_equal:today';
+        }
+        
         return [
             'nombre' => 'required|string|max:255',
             'descripcion' => 'required|string|max:1000',
-            'fecha_inicio' => 'required|date|after_or_equal:today',
+            'fecha_inicio' => $fechaInicioRules,
             'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
             'direccion' => 'required|string|max:255',
             // 'estado' se actualiza automáticamente según las fechas, no desde el formulario

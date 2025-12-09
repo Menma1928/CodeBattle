@@ -21,7 +21,7 @@
 
         <!-- Search Bar -->
         <x-card class="mb-6">
-            <form method="GET" action="{{ route('equipos.index') }}" class="flex flex-col sm:flex-row gap-4">
+            <form method="GET" action="{{ isset($isMyTeams) && $isMyTeams ? route('equipos.myTeams') : route('equipos.index') }}" class="flex flex-col sm:flex-row gap-4">
                 <div class="flex-1">
                     <x-text-input
                         name="search"
@@ -39,7 +39,7 @@
                         Buscar
                     </x-primary-button>
                     @if(request('search'))
-                    <a href="{{ route('equipos.index') }}">
+                    <a href="{{ isset($isMyTeams) && $isMyTeams ? route('equipos.myTeams') : route('equipos.index') }}">
                         <x-secondary-button type="button">
                             Limpiar
                         </x-secondary-button>

@@ -269,6 +269,99 @@
             </x-card>
             @endif
 
+            <!-- Event Rules Section -->
+            <div x-data="{ open: false }" class="mb-6">
+                <x-card>
+                    <button @click="open = !open" class="w-full flex items-center justify-between text-left">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Reglas del Evento</h2>
+                        </div>
+                        <svg class="w-6 h-6 text-gray-500 dark:text-gray-400 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+
+                    <div x-show="open" x-collapse class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        @if($evento->eventRules && $evento->eventRules->count() > 0)
+                            <div class="prose dark:prose-invert max-w-none">
+                                <ul class="space-y-3 text-gray-700 dark:text-gray-300">
+                                    @foreach($evento->eventRules as $rule)
+                                        <li class="flex items-start gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/10 rounded-lg border border-emerald-100 dark:border-emerald-800/30">
+                                            <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            <span class="flex-1">{{ $rule->regla }}</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @else
+                            <div class="text-center py-8">
+                                <svg class="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <p class="text-gray-500 dark:text-gray-400">No se han especificado reglas para este evento.</p>
+                            </div>
+                        @endif
+                    </div>
+                </x-card>
+            </div>
+
+            <!-- Event Requirements Section -->
+            <div x-data="{ open: false }" class="mb-6">
+                <x-card>
+                    <button @click="open = !open" class="w-full flex items-center justify-between text-left">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                                </svg>
+                            </div>
+                            <h2 class="text-xl font-bold text-gray-900 dark:text-white">Requisitos del Evento</h2>
+                        </div>
+                        <svg class="w-6 h-6 text-gray-500 dark:text-gray-400 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+
+                    <div x-show="open" x-collapse class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        @if($evento->requirements && $evento->requirements->count() > 0)
+                            <div class="prose dark:prose-invert max-w-none">
+                                <div class="space-y-3">
+                                    @foreach($evento->requirements as $requirement)
+                                        <div class="p-4 bg-amber-50 dark:bg-amber-900/10 rounded-lg border border-amber-100 dark:border-amber-800/30">
+                                            <div class="flex items-start gap-3">
+                                                <svg class="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                                <div class="flex-1">
+                                                    <h4 class="font-semibold text-gray-900 dark:text-white mb-1">{{ $requirement->name }}</h4>
+                                                    @if($requirement->description)
+                                                        <p class="text-sm text-gray-700 dark:text-gray-300">{{ $requirement->description }}</p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @else
+                            <div class="text-center py-8">
+                                <svg class="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                                </svg>
+                                <p class="text-gray-500 dark:text-gray-400">No se han especificado requisitos para este evento.</p>
+                            </div>
+                        @endif
+                    </div>
+                </x-card>
+            </div>
+
             <!-- Registered Teams Section -->
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Equipos Registrados</h2>

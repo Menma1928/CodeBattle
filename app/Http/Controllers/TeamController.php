@@ -31,27 +31,50 @@ class TeamController extends Controller
         }
 
         $teams = $query->paginate(10)->withQueryString();
-        return view('equipos.index', compact('teams', 'title'));
+        $isMyTeams = false; // Flag para identificar que estamos en "Equipos"
+        return view('equipos.index', compact('teams', 'title', 'isMyTeams'));
     }
 
-    public function myTeams(){
+    public function myTeams(Request $request){
         $title = "Mis Equipos";
-        $teams = auth()->user()->teams()
-            ->with(['event', 'users', 'project']) // Eager loading
-            ->paginate(10);
-        return view('equipos.index', compact('teams', 'title'));
+        $query = auth()->user()->teams()
+            ->with(['event', 'users', 'project']); // Eager loading
+        
+        // Búsqueda por nombre, descripción o evento
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nombre', 'like', '%' . $search . '%')
+                  ->orWhere('descripcion', 'like', '%' . $search . '%')
+                  ->orWhereHas('event', function($q) use ($search) {
+                      $q->where('nombre', 'like', '%' . $search . '%');
+                  });
+            });
+        }
+        
+        $teams = $query->paginate(10)->withQueryString();
+        $isMyTeams = true; // Flag para identificar que estamos en "Mis Equipos"
+        return view('equipos.index', compact('teams', 'title', 'isMyTeams'));
     }
 
-    public function create(Event $event){
-        // Verificar que el evento esté en estado pendiente
-        if ($event->estado !== 'pendiente') {
-            return redirect()->route('eventos.show', $event)->withErrors([
-                'error' => 'No se pueden crear equipos. El evento debe estar en estado "pendiente" para permitir la creación de equipos.'
-            ]);
+    public function create(Request $request){
+        $event_id = $request->get('event_id');
+        
+        if ($event_id) {
+            $event = Event::findOrFail($event_id);
+            
+            // Verificar que el evento esté en estado pendiente
+            if ($event->estado !== 'pendiente') {
+                return redirect()->route('eventos.show', $event)->withErrors([
+                    'error' => 'No se pueden crear equipos. El evento debe estar en estado "pendiente" para permitir la creación de equipos.'
+                ]);
+            }
+            
+            return view('equipos.create', compact('event'));
         }
-
+        
         $teams = Team::all();
-        return view('equipos.create', compact('teams', 'event'));
+        return view('equipos.create', compact('teams'));
     }
 
     public function store(TeamStoreRequest $request){
@@ -102,6 +125,9 @@ class TeamController extends Controller
                 'url_banner' => 'teams/' . $team->id . '/' . $bannerName
             ]);
         }
+
+        // Cargar la relación del evento antes de redirigir
+        $team->load('event');
 
         return redirect()->route('equipos.show', $team)->with('success', 'Equipo creado exitosamente.');
     }

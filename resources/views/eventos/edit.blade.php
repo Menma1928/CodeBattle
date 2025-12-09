@@ -87,7 +87,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Fecha Inicio -->
                     <div>
-                        <x-input-label for="fecha_inicio" value="Fecha de Inicio *" />
+                        <x-input-label for="fecha_inicio" :value="'Fecha de Inicio' . (in_array($evento->estado, ['activo', 'en_calificacion', 'finalizado']) ? '' : ' *')" />
                         <x-text-input
                             id="fecha_inicio"
                             name="fecha_inicio"
@@ -95,9 +95,14 @@
                             class="mt-1 block w-full"
                             :value="old('fecha_inicio', $evento->fecha_inicio ? $evento->fecha_inicio->format('Y-m-d\TH:i') : '')"
                             min="{{ now()->format('Y-m-d\TH:i') }}"
-                            required
+                            :disabled="in_array($evento->estado, ['activo', 'en_calificacion', 'finalizado'])"
+                            :required="!in_array($evento->estado, ['activo', 'en_calificacion', 'finalizado'])"
                         />
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No se pueden usar fechas anteriores a hoy</p>
+                        @if(in_array($evento->estado, ['activo', 'en_calificacion', 'finalizado']))
+                            <p class="mt-1 text-sm text-amber-600 dark:text-amber-400 font-medium">No se puede editar la fecha de inicio de un evento activo o finalizado</p>
+                        @else
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No se pueden usar fechas anteriores a hoy</p>
+                        @endif
                         <x-input-error :messages="$errors->get('fecha_inicio')" class="mt-2" />
                     </div>
 
@@ -189,7 +194,7 @@
 
                 <div id="reglas-container" class="space-y-3">
                     @php
-                        $reglas = old('reglas', $evento->reglas ?? []);
+                        $reglas = old('reglas', $evento->eventRules->pluck('regla')->toArray());
                         $reglas = is_array($reglas) ? $reglas : [];
                     @endphp
 
@@ -247,7 +252,7 @@
 
                 <div id="requisitos-container" class="space-y-3">
                     @php
-                        $requisitos = old('requisitos', $evento->requisitos ?? []);
+                        $requisitos = old('requisitos', $evento->requirements->pluck('name')->toArray());
                         $requisitos = is_array($requisitos) ? $requisitos : [];
                     @endphp
 
