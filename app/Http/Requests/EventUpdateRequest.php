@@ -22,7 +22,7 @@ class EventUpdateRequest extends FormRequest
         return [
             'nombre' => 'required|string|max:255',
             'descripcion' => 'required|string|max:1000',
-            'fecha_inicio' => 'required|date',
+            'fecha_inicio' => 'required|date|after_or_equal:today',
             'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
             'direccion' => 'required|string|max:255',
             // 'estado' se actualiza automáticamente según las fechas, no desde el formulario
@@ -43,6 +43,7 @@ class EventUpdateRequest extends FormRequest
             'nombre.required' => 'El nombre del evento es obligatorio.',
             'descripcion.required' => 'La descripción del evento es obligatoria.',
             'fecha_inicio.required' => 'La fecha de inicio es obligatoria.',
+            'fecha_inicio.after_or_equal' => 'La fecha de inicio no puede ser anterior a hoy.',
             'fecha_fin.after_or_equal' => 'La fecha de fin debe ser posterior o igual a la fecha de inicio.',
             'direccion.required' => 'La dirección del evento es obligatoria.',
         ];

@@ -86,8 +86,10 @@
                             type="datetime-local"
                             class="mt-1 block w-full"
                             :value="old('fecha_inicio')"
+                            min="{{ now()->format('Y-m-d\TH:i') }}"
                             required
                         />
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No se pueden crear eventos con fecha anterior a hoy</p>
                         <x-input-error :messages="$errors->get('fecha_inicio')" class="mt-2" />
                     </div>
 
@@ -100,8 +102,9 @@
                             type="datetime-local"
                             class="mt-1 block w-full"
                             :value="old('fecha_fin')"
+                            min="{{ now()->format('Y-m-d\TH:i') }}"
                         />
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Opcional</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Opcional - No se pueden usar fechas anteriores a hoy</p>
                         <x-input-error :messages="$errors->get('fecha_fin')" class="mt-2" />
                     </div>
 
