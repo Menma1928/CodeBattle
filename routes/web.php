@@ -14,9 +14,7 @@ Route::get('/', function () {
 
 
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -28,11 +26,11 @@ Route::middleware('auth')->group(function () {
         Route::delete('/eventos/{evento}/remove-jury/{user}', [EventController::class, 'removeJury'])->name('eventos.removeJury');
         Route::get('/eventos/{evento}/dashboard', [EventController::class, 'dashboard'])->name('eventos.dashboard');
         Route::post('/eventos/{evento}/assign-positions', [EventController::class, 'assignPositions'])->name('eventos.assignPositions');
-<<<<<<< HEAD
         Route::post('/eventos/{evento}/finalize', [EventController::class, 'finalize'])->name('eventos.finalize');
-=======
         Route::get('/eventos/{evento}/certificate', [EventController::class, 'generateCertificate'])->name('eventos.certificate');
->>>>>>> 9f8370e (Primera modificación (agregar el comando para instalar DomPDF))
+        Route::get('/eventos/{evento}/report/pdf', [EventController::class, 'generateReportPDF'])->name('eventos.report.pdf');
+        Route::get('/eventos/{evento}/report/excel', [EventController::class, 'generateReportExcel'])->name('eventos.report.excel');
+        Route::get('/eventos/{evento}/certificates/all', [EventController::class, 'generateAllCertificates'])->name('eventos.certificates.all');
     });
     Route::get('/mis-eventos', [EventController::class, 'myEvents'])->name('eventos.misEventos')->middleware(['permission:ver mis eventos']);
     Route::group(['middleware' => ['permission:ver equipos']], function(){
@@ -41,6 +39,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('/equipos/{equipo}/remove/{user}', [TeamController::class, 'removeMember'])->name('equipos.removeMember');
         Route::delete('/equipos/{equipo}/leave', [TeamController::class, 'leaveTeam'])->name('equipos.leave');
         Route::post('/equipos/{equipo}/update-role/{user}', [TeamController::class, 'updateMemberRole'])->name('equipos.updateMemberRole');
+        Route::get('/equipos/{equipo}/search-users', [TeamController::class, 'searchUsers'])->name('equipos.searchUsers');
+        Route::post('/equipos/{equipo}/invite-user', [TeamController::class, 'inviteUser'])->name('equipos.inviteUser');
     });
     Route::get('/mis-equipos', [TeamController::class, 'myTeams'])->name('equipos.misEquipos')->middleware(['permission:ver mis equipos']);
 

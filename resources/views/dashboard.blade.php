@@ -21,6 +21,116 @@
             </div>
         </div>
 
+        <!-- Notifications Section -->
+        @if($pendingRequests->count() > 0 || $myPendingRequests->count() > 0)
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Notificaciones</h2>
+            
+            <!-- Solicitudes recibidas (soy líder) -->
+            @if($pendingRequests->count() > 0)
+            <x-card class="mb-4 border-l-4 border-purple-500">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Solicitudes para unirse a tu equipo</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ $pendingRequests->count() }} {{ $pendingRequests->count() == 1 ? 'solicitud pendiente' : 'solicitudes pendientes' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    @foreach($pendingRequests as $request)
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <div class="flex items-center gap-4 flex-1">
+                            <x-avatar :name="$request->user->name" size="lg" />
+                            <div class="flex-1">
+                                <p class="font-semibold text-gray-900 dark:text-white">{{ $request->user->name }}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    Quiere unirse a <span class="font-medium text-purple-600 dark:text-purple-400">{{ $request->team->nombre }}</span>
+                                </p>
+                                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                                    Evento: {{ $request->team->event->nombre }} • {{ $request->created_at->diffForHumans() }}
+                                </p>
+                                @if($request->message)
+                                <p class="text-sm text-gray-700 dark:text-gray-300 mt-2 italic">"{{ $request->message }}"</p>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <form method="POST" action="{{ route('joinRequests.accept', $request) }}">
+                                @csrf
+                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Aceptar
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ route('joinRequests.reject', $request) }}">
+                                @csrf
+                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                    Rechazar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </x-card>
+            @endif
+
+            <!-- Solicitudes enviadas (yo solicité unirme) -->
+            @if($myPendingRequests->count() > 0)
+            <x-card class="border-l-4 border-indigo-500">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Tus solicitudes pendientes</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ $myPendingRequests->count() }} {{ $myPendingRequests->count() == 1 ? 'solicitud enviada' : 'solicitudes enviadas' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    @foreach($myPendingRequests as $request)
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                        <div class="flex-1">
+                            <p class="font-semibold text-gray-900 dark:text-white">{{ $request->team->nombre }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">
+                                Evento: {{ $request->team->event->nombre }}
+                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                                Enviada {{ $request->created_at->diffForHumans() }}
+                            </p>
+                        </div>
+                        <form method="POST" action="{{ route('joinRequests.cancel', $request) }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                                Cancelar
+                            </button>
+                        </form>
+                    </div>
+                    @endforeach
+                </div>
+            </x-card>
+            @endif
+        </div>
+        @endif
+
         <!-- Quick Actions Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @hasrole('Super Admin')

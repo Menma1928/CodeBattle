@@ -98,6 +98,20 @@
                         </div>
                         @endif
 
+                        <!-- Event Admin Info -->
+                        @if($evento->admin)
+                        <div class="mt-4 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">Organizado por</p>
+                            <div class="flex items-center gap-3">
+                                <x-avatar :name="$evento->admin->name" size="lg" />
+                                <div>
+                                    <p class="font-semibold text-gray-900 dark:text-white">{{ $evento->admin->name }}</p>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ $evento->admin->email }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
                         @if($user_is_jury)
                         <div class="mt-4">
                             <a href="{{ route('jury.event.projects', $evento) }}">
@@ -288,14 +302,6 @@
                                     </a>
                                     @endcan
 
-                                    @can('unirse equipos')
-                                    @if(!auth()->user()->hasRole('Super Admin'))
-                                    <button onclick="alert('Funcionalidad en desarrollo')" class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 transition">
-                                        Solicitar Unirme
-                                    </button>
-                                    @endif
-                                    @endcan
-
                                     @can('eliminar equipos')
                                     <form method="POST" action="{{ route('equipos.destroy', $team) }}" class="inline" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este equipo?');">
                                         @csrf
@@ -322,14 +328,6 @@
                                         Editar Equipo
                                     </x-secondary-button>
                                 </a>
-                                @endcan
-
-                                @can('unirse equipos')
-                                @if(!auth()->user()->hasRole('Super Admin'))
-                                <button onclick="alert('Funcionalidad en desarrollo')" class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 transition">
-                                    Solicitar Unirme
-                                </button>
-                                @endif
                                 @endcan
 
                                 @can('eliminar equipos')

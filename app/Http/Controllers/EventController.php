@@ -98,8 +98,12 @@ class EventController extends Controller
             $extension = $image->getClientOriginalExtension();
             $imageName = 'image.' . $extension;
 
+            // Asegurar que el directorio existe
+            $directory = 'events/' . $event->id;
+            \Storage::disk('public')->makeDirectory($directory);
+
             // Guardar en storage/app/public/events/{event_id}/image.ext
-            $image->storeAs('public/events/' . $event->id, $imageName);
+            $image->storeAs($directory, $imageName, 'public');
 
             // Guardar ruta relativa en BD: events/{event_id}/image.ext
             $event->update([
@@ -158,11 +162,15 @@ class EventController extends Controller
 
             // Eliminar imagen anterior si existe (toda la carpeta del evento)
             if ($evento->url_imagen) {
-                \Storage::deleteDirectory('public/events/' . $evento->id);
+                \Storage::disk('public')->deleteDirectory('events/' . $evento->id);
             }
 
+            // Asegurar que el directorio existe
+            $directory = 'events/' . $evento->id;
+            \Storage::disk('public')->makeDirectory($directory);
+
             // Guardar en storage/app/public/events/{event_id}/image.ext
-            $image->storeAs('public/events/' . $evento->id, $imageName);
+            $image->storeAs($directory, $imageName, 'public');
 
             // Guardar ruta relativa en BD: events/{event_id}/image.ext
             $updateData['url_imagen'] = 'events/' . $evento->id . '/' . $imageName;
@@ -214,7 +222,7 @@ class EventController extends Controller
             $evento->refresh();
         }
         
-        $evento->load('eventRules', 'requirements', 'juries');
+        $evento->load('eventRules', 'requirements', 'juries', 'admin');
         $user_is_admin = auth()->id() === $evento->admin_id;
         $user_is_jury = $evento->juries()->where('user_id', auth()->id())->exists();
         $user_team = null;
@@ -242,7 +250,7 @@ class EventController extends Controller
                 $team->leader_name = $team->users->first()?->name ?? 'Sin líder';
             }
 
-            return view('eventos.finalizado', compact('evento', 'teams', 'user_is_admin', 'user_is_jury'));
+            return view('eventos.finalizado', compact('evento', 'teams', 'user_is_admin', 'user_is_jury', 'user_team'));
         }
 
         // Vista normal para eventos no finalizados
@@ -391,7 +399,6 @@ class EventController extends Controller
     }
 
     /**
-<<<<<<< HEAD
      * Finalizar el evento (cambiar estado a finalizado)
      */
     public function finalize(Event $evento)
@@ -407,9 +414,7 @@ class EventController extends Controller
         $evento->update(['estado' => 'finalizado']);
 
         return redirect()->route('eventos.show', $evento)->with('success', 'El evento ha sido finalizado exitosamente. Los jurados ya no podrán calificar.');
-=======
-     * Generate participation certificate PDF for a user in an event
-     */
+    }
     public function generateCertificate(Event $evento)
     {
         // Verify event is finished
@@ -446,8 +451,197 @@ class EventController extends Controller
 
         // Return PDF download
         return $pdf->download('Constancia_' . $evento->nombre . '_' . $team->nombre . '.pdf');
->>>>>>> 9f8370e (Primera modificación (agregar el comando para instalar DomPDF))
+    }
+
+    /**
+     * Generate PDF report with all event statistics
+     */
+    public function generateReportPDF(Event $evento)
+    {
+        $this->authorize('update', $evento);
+
+        $evento->load('requirements', 'juries', 'admin');
+
+        // Get all teams with their projects and ratings
+        $teams = Team::with([
+            'users' => function($query) {
+                $query->wherePivot('rol', 'lider');
+            },
+            'project.requirements',
+            'project.juryRatings.jury',
+            'project.juryRatings.requirement'
+        ])
+        ->where('event_id', $evento->id)
+        ->get();
+
+        // Calculate ratings
+        foreach ($teams as $team) {
+            if ($team->project) {
+                $team->average_rating = $team->project->getAverageRating();
+                $team->leader_name = $team->users->first()?->name ?? 'Sin líder';
+            } else {
+                $team->average_rating = 0;
+                $team->leader_name = $team->users->first()?->name ?? 'Sin líder';
+            }
+        }
+
+        // Sort by average rating
+        $teams = $teams->sortByDesc('average_rating')->values();
+
+        $data = [
+            'evento' => $evento,
+            'teams' => $teams,
+            'fecha_generacion' => now()->format('d/m/Y H:i'),
+        ];
+
+        $pdf = \PDF::loadView('pdf.event-report', $data);
+        return $pdf->download('Reporte_' . $evento->nombre . '.pdf');
+    }
+
+    /**
+     * Generate Excel report with all event statistics
+     */
+    public function generateReportExcel(Event $evento)
+    {
+        $this->authorize('update', $evento);
+
+        $evento->load('requirements', 'juries', 'admin');
+
+        // Get all teams with their projects and ratings
+        $teams = Team::with([
+            'users' => function($query) {
+                $query->wherePivot('rol', 'lider');
+            },
+            'project.requirements',
+            'project.juryRatings.jury',
+            'project.juryRatings.requirement'
+        ])
+        ->where('event_id', $evento->id)
+        ->get();
+
+        // Prepare data for Excel
+        $data = [];
+        $data[] = ['Reporte de Evento: ' . $evento->nombre];
+        $data[] = ['Fecha de generación: ' . now()->format('d/m/Y H:i')];
+        $data[] = ['Administrador: ' . $evento->admin->name];
+        $data[] = [];
+        
+        // Headers
+        $headers = ['#', 'Equipo', 'Líder', 'Calificación Promedio', 'Posición'];
+        foreach ($evento->requirements as $req) {
+            $headers[] = $req->nombre;
+        }
+        $data[] = $headers;
+
+        // Team data
+        foreach ($teams as $index => $team) {
+            $row = [
+                $index + 1,
+                $team->nombre,
+                $team->users->first()?->name ?? 'Sin líder',
+                $team->project ? $team->project->getAverageRating() : 0,
+                $team->posicion ?? '-'
+            ];
+
+            // Add requirement averages
+            if ($team->project) {
+                foreach ($evento->requirements as $req) {
+                    $row[] = $team->project->getRequirementAverage($req->id);
+                }
+            } else {
+                foreach ($evento->requirements as $req) {
+                    $row[] = '-';
+                }
+            }
+
+            $data[] = $row;
+        }
+
+        // Create CSV content
+        $filename = 'Reporte_' . $evento->nombre . '_' . now()->format('Y-m-d') . '.csv';
+        $handle = fopen('php://temp', 'r+');
+        
+        foreach ($data as $row) {
+            fputcsv($handle, $row);
+        }
+        
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    /**
+     * Generate all certificates as ZIP file
+     */
+    public function generateAllCertificates(Event $evento)
+    {
+        $this->authorize('update', $evento);
+
+        if ($evento->estado !== 'finalizado') {
+            return redirect()->back()->withErrors([
+                'error' => 'Solo se pueden generar constancias de eventos finalizados.'
+            ]);
+        }
+
+        $evento->load('admin');
+        $teams = Team::with('users')->where('event_id', $evento->id)->get();
+
+        if ($teams->isEmpty()) {
+            return redirect()->back()->withErrors([
+                'error' => 'No hay equipos en este evento.'
+            ]);
+        }
+
+        // Create temporary directory
+        $tempDir = storage_path('app/temp/certificates_' . $evento->id);
+        if (!file_exists($tempDir)) {
+            mkdir($tempDir, 0777, true);
+        }
+
+        // Generate PDF for each team member
+        foreach ($teams as $team) {
+            foreach ($team->users as $user) {
+                $data = [
+                    'evento' => $evento,
+                    'team' => $team,
+                    'user' => $user,
+                    'fecha_generacion' => now()->format('d/m/Y'),
+                ];
+
+                $pdf = \PDF::loadView('pdf.certificate', $data);
+                $filename = $tempDir . '/' . 'Constancia_' . $team->nombre . '_' . $user->name . '.pdf';
+                $pdf->save($filename);
+            }
+        }
+
+        // Create ZIP file
+        $zipFile = storage_path('app/temp/Constancias_' . $evento->nombre . '.zip');
+        $zip = new \ZipArchive();
+        
+        if ($zip->open($zipFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
+            $files = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($tempDir),
+                \RecursiveIteratorIterator::LEAVES_ONLY
+            );
+
+            foreach ($files as $file) {
+                if (!$file->isDir()) {
+                    $filePath = $file->getRealPath();
+                    $relativePath = substr($filePath, strlen($tempDir) + 1);
+                    $zip->addFile($filePath, $relativePath);
+                }
+            }
+
+            $zip->close();
+        }
+
+        // Download and cleanup
+        return response()->download($zipFile)->deleteFileAfterSend(true);
     }
 
 }
-

@@ -76,8 +76,12 @@ class TeamController extends Controller
             $extension = $banner->getClientOriginalExtension();
             $bannerName = 'banner.' . $extension;
 
+            // Asegurar que el directorio existe
+            $directory = 'teams/' . $team->id;
+            \Storage::disk('public')->makeDirectory($directory);
+
             // Guardar en storage/app/public/teams/{team_id}/banner.ext
-            $banner->storeAs('public/teams/' . $team->id, $bannerName);
+            $banner->storeAs($directory, $bannerName, 'public');
 
             // Guardar ruta relativa en BD: teams/{team_id}/banner.ext
             $team->update([
@@ -107,11 +111,15 @@ class TeamController extends Controller
 
             // Eliminar banner anterior si existe (toda la carpeta del equipo)
             if ($equipo->url_banner) {
-                \Storage::deleteDirectory('public/teams/' . $equipo->id);
+                \Storage::disk('public')->deleteDirectory('teams/' . $equipo->id);
             }
 
+            // Asegurar que el directorio existe
+            $directory = 'teams/' . $equipo->id;
+            \Storage::disk('public')->makeDirectory($directory);
+
             // Guardar en storage/app/public/teams/{team_id}/banner.ext
-            $banner->storeAs('public/teams/' . $equipo->id, $bannerName);
+            $banner->storeAs($directory, $bannerName, 'public');
 
             // Guardar ruta relativa en BD: teams/{team_id}/banner.ext
             $updateData['url_banner'] = 'teams/' . $equipo->id . '/' . $bannerName;
@@ -182,6 +190,74 @@ class TeamController extends Controller
 
         $equipo->users()->detach(auth()->id());
         return redirect()->route('equipos.index')->with('success', 'Has abandonado el equipo.');
+    }
+
+    public function searchUsers(Team $equipo, Request $request){
+        $this->authorize('update', $equipo);
+
+        $query = $request->get('q', '');
+        
+        if (strlen($query) < 2) {
+            return response()->json(['users' => []]);
+        }
+
+        // Buscar usuarios que:
+        // 1. NO estén en este equipo
+        // 2. NO estén en otro equipo del mismo evento
+        // 3. Tengan rol de Participante
+        $users = User::whereHas('roles', function($q) {
+                $q->where('name', 'Participante');
+            })
+            ->where(function($q) use ($query) {
+                $q->where('name', 'like', '%' . $query . '%')
+                  ->orWhere('email', 'like', '%' . $query . '%');
+            })
+            ->whereDoesntHave('teams', function($q) use ($equipo) {
+                $q->where('team_id', $equipo->id);
+            })
+            ->whereDoesntHave('teams', function($q) use ($equipo) {
+                $q->where('event_id', $equipo->event_id);
+            })
+            ->limit(10)
+            ->get(['id', 'name', 'email']);
+
+        return response()->json(['users' => $users]);
+    }
+
+    public function inviteUser(Team $equipo, Request $request){
+        $this->authorize('update', $equipo);
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id'
+        ]);
+
+        $user = User::findOrFail($request->user_id);
+
+        // Verificar que el evento esté en estado pendiente
+        if ($equipo->event->estado !== 'pendiente') {
+            return response()->json(['error' => 'Solo puedes invitar usuarios cuando el evento está pendiente.'], 400);
+        }
+
+        // Verificar que el equipo no tenga ya 5 participantes
+        if ($equipo->users()->count() >= 5) {
+            return response()->json(['error' => 'El equipo ya tiene el máximo de 5 participantes.'], 400);
+        }
+
+        // Verificar que el usuario no esté ya en el equipo
+        if ($equipo->users()->where('user_id', $user->id)->exists()) {
+            return response()->json(['error' => 'El usuario ya es miembro de este equipo.'], 400);
+        }
+
+        // Verificar que el usuario no esté en otro equipo del mismo evento
+        $userTeamInEvent = $user->teams()->where('event_id', $equipo->event_id)->exists();
+        if ($userTeamInEvent) {
+            return response()->json(['error' => 'El usuario ya pertenece a otro equipo en este evento.'], 400);
+        }
+
+        // Agregar usuario al equipo
+        $equipo->users()->attach($user->id, ['rol' => 'miembro']);
+
+        return response()->json(['success' => true, 'message' => 'Usuario agregado exitosamente al equipo.']);
     }
 
     public function updateMemberRole(Request $request, Team $equipo, User $user){

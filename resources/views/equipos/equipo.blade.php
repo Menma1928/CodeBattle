@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen">
+<div class="min-h-screen" x-data="teamInvite()">
     <!-- Header with Back Button -->
     <div class="bg-gradient-to-r from-pink-600 to-purple-600 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -249,9 +249,81 @@
 
             <!-- Team Members Section -->
             <div>
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                    Miembros del Equipo ({{ $equipo->users->count() }}/5)
-                </h2>
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                        Miembros del Equipo ({{ $equipo->users->count() }}/5)
+                    </h2>
+                    
+                    @if($is_leader && $equipo->users->count() < 5 && $equipo->event->estado === 'pendiente')
+                    <button @click="showUserSearch = true" class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 active:bg-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Invitar Usuario
+                    </button>
+                    @endif
+                </div>
+
+                <!-- User Search Modal -->
+                @if($is_leader && $equipo->users->count() < 5 && $equipo->event->estado === 'pendiente')
+                <div x-show="showUserSearch" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                        <div x-show="showUserSearch" @click="showUserSearch = false" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+                        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                        <div x-show="showUserSearch" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                            <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Buscar Usuario</h3>
+                                    <button @click="showUserSearch = false" class="text-gray-400 hover:text-gray-500">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div class="mb-4">
+                                    <input type="text" x-model="searchQuery" @input="searchUsers" placeholder="Buscar por nombre o email..." class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-700 dark:text-white">
+                                </div>
+
+                                <div class="max-h-96 overflow-y-auto">
+                                    <div x-show="loading" class="text-center py-4">
+                                        <p class="text-gray-500 dark:text-gray-400">Buscando...</p>
+                                    </div>
+
+                                    <div x-show="!loading && searchResults.length === 0 && searchQuery.length >= 2" class="text-center py-4">
+                                        <p class="text-gray-500 dark:text-gray-400">No se encontraron usuarios</p>
+                                    </div>
+
+                                    <div x-show="searchQuery.length < 2 && !loading" class="text-center py-4">
+                                        <p class="text-gray-500 dark:text-gray-400">Escribe al menos 2 caracteres para buscar</p>
+                                    </div>
+
+                                    <div class="space-y-2">
+                                        <template x-for="user in searchResults" :key="user.id">
+                                            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                                                        <span x-text="user.name.charAt(0).toUpperCase()"></span>
+                                                    </div>
+                                                    <div>
+                                                        <p class="font-semibold text-gray-900 dark:text-white" x-text="user.name"></p>
+                                                        <p class="text-sm text-gray-600 dark:text-gray-400" x-text="user.email"></p>
+                                                    </div>
+                                                </div>
+                                                <button @click="inviteUser(user.id)" :disabled="inviting" class="inline-flex items-center px-3 py-1 bg-purple-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 active:bg-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50">
+                                                    Invitar
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
 
                 <x-card :padding="false">
                     <div class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -428,5 +500,66 @@ function updateMemberRole(selectElement) {
         location.reload();
     });
 }
+</script>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('teamInvite', () => ({
+        showUserSearch: false,
+        searchQuery: '',
+        searchResults: [],
+        loading: false,
+        inviting: false,
+
+        searchUsers() {
+            if (this.searchQuery.length < 2) {
+                this.searchResults = [];
+                return;
+            }
+
+            this.loading = true;
+            
+            fetch(`{{ route('equipos.searchUsers', $equipo) }}?q=${encodeURIComponent(this.searchQuery)}`)
+                .then(response => response.json())
+                .then(data => {
+                    this.searchResults = data.users || [];
+                    this.loading = false;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    this.loading = false;
+                });
+        },
+
+        inviteUser(userId) {
+            if (this.inviting) return;
+            
+            this.inviting = true;
+
+            fetch(`{{ route('equipos.inviteUser', $equipo) }}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ user_id: userId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Error al invitar usuario');
+                    this.inviting = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al invitar usuario');
+                this.inviting = false;
+            });
+        }
+    }));
+});
 </script>
 @endsection
