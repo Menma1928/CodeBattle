@@ -128,21 +128,42 @@
                         <x-input-error :messages="$errors->get('direccion')" class="mt-2" />
                     </div>
 
-                    <!-- Estado -->
+                    <!-- Estado (Read-only) -->
                     <div class="md:col-span-2">
-                        <x-input-label for="estado" value="Estado del Evento *" />
-                        <select
-                            id="estado"
-                            name="estado"
-                            class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-purple-500 dark:focus:border-purple-600 focus:ring-purple-500 dark:focus:ring-purple-600 rounded-lg shadow-sm"
-                            required
-                        >
-                            <option value="">Seleccione un estado</option>
-                            <option value="pendiente" {{ old('estado', $evento->estado) == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                            <option value="activo" {{ old('estado', $evento->estado) == 'activo' ? 'selected' : '' }}>Activo</option>
-                            <option value="finalizado" {{ old('estado', $evento->estado) == 'finalizado' ? 'selected' : '' }}>Finalizado</option>
-                        </select>
-                        <x-input-error :messages="$errors->get('estado')" class="mt-2" />
+                        <x-input-label for="estado" value="Estado del Evento" />
+                        <div class="mt-1 p-4 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                @php
+                                    $estadoActual = $evento->estado;
+                                    $badgeType = $estadoActual === 'activo' ? 'success' : ($estadoActual === 'finalizado' ? 'error' : ($estadoActual === 'en_calificacion' ? 'purple' : 'warning'));
+                                    $estadoTexto = [
+                                        'pendiente' => 'Pendiente',
+                                        'activo' => 'Activo',
+                                        'en_calificacion' => 'En Calificación',
+                                        'finalizado' => 'Finalizado'
+                                    ][$estadoActual] ?? ucfirst($estadoActual);
+                                @endphp
+                                <x-badge :type="$badgeType" size="lg">
+                                    {{ $estadoTexto }}
+                                </x-badge>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                                        <strong>Estado actual del evento</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                            <div class="flex items-start gap-2">
+                                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <div class="text-sm text-blue-800 dark:text-blue-200">
+                                    <p class="font-semibold mb-1">El estado se actualiza automáticamente</p>
+                                    <p>El estado del evento se actualiza según las fechas configuradas. No es necesario cambiarlo manualmente.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </x-card>
@@ -272,16 +293,12 @@
                 </a>
                 <div class="flex flex-col sm:flex-row gap-4">
                     @can('eliminar eventos')
-                    <form method="POST" action="{{ route('eventos.destroy', $evento) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este evento? Esta acción no se puede deshacer.');" class="w-full sm:w-auto">
-                        @csrf
-                        @method('DELETE')
-                        <x-danger-button type="submit" class="w-full">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                            Eliminar Evento
-                        </x-danger-button>
-                    </form>
+                    <button type="button" onclick="document.getElementById('delete-event-form').submit();" class="inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150 w-full">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Eliminar Evento
+                    </button>
                     @endcan
                     <x-primary-button type="submit" class="w-full sm:w-auto">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -292,6 +309,14 @@
                 </div>
             </div>
         </form>
+
+        <!-- Delete Form (outside main form to avoid nesting) -->
+        @can('eliminar eventos')
+        <form id="delete-event-form" method="POST" action="{{ route('eventos.destroy', $evento) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este evento? Esta acción no se puede deshacer.');" style="display: none;">
+            @csrf
+            @method('DELETE')
+        </form>
+        @endcan
     </div>
 </div>
 @endsection

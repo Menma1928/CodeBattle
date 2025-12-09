@@ -151,7 +151,7 @@ class EventController extends Controller
             'fecha_inicio' => $request->fecha_inicio,
             'fecha_fin' => $request->fecha_fin,
             'direccion' => $request->direccion,
-            'estado' => $request->estado,
+            // El estado se actualiza automáticamente según las fechas, no desde el formulario
         ];
 
         // Manejar subida de nueva imagen si existe

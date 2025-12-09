@@ -165,16 +165,12 @@
                 </a>
                 <div class="flex flex-col sm:flex-row gap-4">
                     @can('delete', $project)
-                    <form method="POST" action="{{ route('projects.destroy', $project) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer.');" class="w-full sm:w-auto">
-                        @csrf
-                        @method('DELETE')
-                        <x-danger-button type="submit" class="w-full">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                            Eliminar Proyecto
-                        </x-danger-button>
-                    </form>
+                    <button type="button" onclick="document.getElementById('delete-project-form').submit();" class="inline-flex items-center justify-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150 w-full">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Eliminar Proyecto
+                    </button>
                     @endcan
                     <x-primary-button type="submit" class="w-full sm:w-auto">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,6 +181,14 @@
                 </div>
             </div>
         </form>
+
+        <!-- Delete Form (outside main form to avoid nesting) -->
+        @can('delete', $project)
+        <form id="delete-project-form" method="POST" action="{{ route('projects.destroy', $project) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer.');" style="display: none;">
+            @csrf
+            @method('DELETE')
+        </form>
+        @endcan
     </div>
 </div>
 @endsection

@@ -43,11 +43,25 @@ class TeamController extends Controller
     }
 
     public function create(Event $event){
+        // Verificar que el evento esté en estado pendiente
+        if ($event->estado !== 'pendiente') {
+            return redirect()->route('eventos.show', $event)->withErrors([
+                'error' => 'No se pueden crear equipos. El evento debe estar en estado "pendiente" para permitir la creación de equipos.'
+            ]);
+        }
+
         $teams = Team::all();
         return view('equipos.create', compact('teams', 'event'));
     }
 
     public function store(TeamStoreRequest $request){
+        // Verificar que el evento esté en estado pendiente
+        $event = Event::findOrFail($request->event_id);
+        if ($event->estado !== 'pendiente') {
+            return redirect()->back()->withErrors([
+                'event_id' => 'No se pueden crear equipos. El evento debe estar en estado "pendiente" para permitir la creación de equipos.'
+            ])->withInput();
+        }
 
         // Validate that user is not already in a team for this event
         $existingTeam = auth()->user()->teams()
