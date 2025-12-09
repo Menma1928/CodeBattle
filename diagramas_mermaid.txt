@@ -1,0 +1,150 @@
+================================================================================
+DIAGRAMA 1: SOLICITUD PARA UNIRSE A UN EQUIPO
+================================================================================
+Copia desde "flowchart TB" hasta antes del siguiente ====
+Pegalo en https://mermaid.live
+
+flowchart TB
+    subgraph PARTICIPANTE["PARTICIPANTE"]
+        direction LR
+        P0((" ")):::startClass
+        P1["Accede al modulo Eventos"]
+        P2["Selecciona un evento"]
+        P3["Visualiza equipos"]
+        P4["Hace clic en Solicitar unirse"]
+        P5["Espera respuesta"]
+        P6["Recibe notificacion"]
+        P7((" ")):::endClass
+    end
+
+    subgraph SISTEMA["SISTEMA"]
+        direction LR
+        S1{"Estado = pendiente?"}
+        S2{"Ya en equipo del evento?"}
+        S3{"Solicitud pendiente?"}
+        S4["Crea solicitud status=pending"]
+        S5["Notifica al lider"]
+        S6{"Usuario en otro equipo?"}
+        S7{"Menos de 5 miembros?"}
+        S8["Registra en team_user"]
+        S9["Marca accepted"]
+        S10["Marca rejected"]
+        SF1((" ")):::endClass
+        SF2((" ")):::endClass
+        SF3((" ")):::endClass
+    end
+
+    subgraph LIDER["LIDER DEL EQUIPO"]
+        direction LR
+        L1["Accede a Mis Equipos"]
+        L2["Ve solicitudes pendientes"]
+        L3["Revisa solicitante"]
+        L4{"Aprueba?"}
+        L5["Asigna rol al miembro"]
+        LF((" ")):::endClass
+    end
+
+    P0 --> P1 --> P2 --> S1
+    S1 -->|No| SF1
+    S1 -->|Si| S2
+    S2 -->|Si| SF2
+    S2 -->|No| P3 --> P4 --> S3
+    S3 -->|Si| SF3
+    S3 -->|No| S4 --> S5 --> L1
+
+    L1 --> L2 --> L3 --> L4
+    L4 -->|No| S10 --> P6 --> P7
+    L4 -->|Si| S6
+    S6 -->|Si| S10
+    S6 -->|No| S7
+    S7 -->|No| SF3
+    S7 -->|Si| S8 --> S9 --> P5 --> P6
+    P6 --> L5 --> LF
+
+    classDef startClass fill:#22c55e,stroke:#166534,stroke-width:3px,color:#fff
+    classDef endClass fill:#ef4444,stroke:#991b1b,stroke-width:3px,color:#fff
+
+
+================================================================================
+DIAGRAMA 2: EVALUACION DE PROYECTOS POR JURADOS
+================================================================================
+Copia desde "flowchart TB" hasta antes del siguiente ====
+Pegalo en https://mermaid.live
+
+flowchart TB
+    subgraph ADMIN["ADMINISTRADOR DEL EVENTO"]
+        direction LR
+        A0((" ")):::startClass
+        A1["Accede a Gestionar Jurados"]
+        A2["Selecciona 3 administradores"]
+        A3["Asigna jurados"]
+        A4["Cambia estado a en_calificacion"]
+        A5["Revisa promedios"]
+        A6{"Hay empates?"}
+        A7["Decide orden de empatados"]
+        A8["Asigna posiciones"]
+        A9["Finaliza evento"]
+        AF((" ")):::endClass
+    end
+
+    subgraph SISTEMA["SISTEMA"]
+        direction LR
+        S1{"Tiene 3 jurados?"}
+        S2["Notifica a jurados"]
+        S3{"Estado = en_calificacion?"}
+        S4["Muestra proyectos"]
+        S5["Muestra requisitos"]
+        S6{"Rating 1-10?"}
+        S7["Guarda calificacion"]
+        S8{"Todos calificaron?"}
+        S9["Calcula promedios"]
+        S10["Bloquea modificaciones"]
+        S11["Muestra resultados"]
+        SF1((" ")):::endClass
+    end
+
+    subgraph JURADO["JURADO x3"]
+        direction LR
+        J1["Accede como Jurado"]
+        J2["Selecciona evento"]
+        J3["Selecciona proyecto"]
+        J4["Ingresa rating 1-10"]
+        J5["Guarda calificaciones"]
+        J6{"Otro proyecto?"}
+        J7["Finaliza sesion"]
+    end
+
+    A0 --> A1 --> A2 --> A3 --> S1
+    S1 -->|No| A2
+    S1 -->|Si| A4 --> S2
+
+    S2 --> J1 --> J2 --> S3
+    S3 -->|No| SF1
+    S3 -->|Si| S4 --> J3 --> S5 --> J4 --> S6
+    S6 -->|No| J4
+    S6 -->|Si| J5 --> S7 --> J6
+    J6 -->|Si| J3
+    J6 -->|No| J7 --> S8
+
+    S8 -->|No| SF1
+    S8 -->|Si| S9 --> A5 --> A6
+    A6 -->|Si| A7 --> A8
+    A6 -->|No| A8
+    A8 --> A9 --> S10 --> S11 --> AF
+
+    classDef startClass fill:#22c55e,stroke:#166534,stroke-width:3px,color:#fff
+    classDef endClass fill:#ef4444,stroke:#991b1b,stroke-width:3px,color:#fff
+
+
+================================================================================
+INSTRUCCIONES
+================================================================================
+
+1. Abre https://mermaid.live
+2. Borra todo el contenido del editor izquierdo
+3. Copia UN diagrama completo (desde "flowchart TB" hasta antes de ====)
+4. Pegalo en el editor
+5. El diagrama aparece automaticamente a la derecha
+6. Haz clic en "Actions" > "Export PNG" o "Export SVG"
+
+================================================================================

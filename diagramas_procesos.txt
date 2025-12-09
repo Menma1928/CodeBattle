@@ -1,0 +1,297 @@
+================================================================================
+DIAGRAMAS DE PROCESOS - CODEBATTLE
+Sistema Web para Control de Eventos Educativos
+================================================================================
+
+INSTRUCCIONES:
+Estos diagramas estan disenados para ser creados en herramientas como:
+- Draw.io (diagrams.net) - RECOMENDADO
+- Lucidchart
+- Microsoft Visio
+- Bizagi Modeler
+
+El formato es BPMN con Swimlanes (carriles por actor).
+
+================================================================================
+DIAGRAMA 1: SOLICITUD PARA UNIRSE A UN EQUIPO
+================================================================================
+
+ACTORES (SWIMLANES - Carriles horizontales):
+1. PARTICIPANTE
+2. SISTEMA
+3. LIDER DEL EQUIPO
+
+--------------------------------------------------------------------------------
+                              FLUJO DEL PROCESO
+--------------------------------------------------------------------------------
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  PARTICIPANTE                                                                 ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                               ║
+║  ●───►[ Accede al ]───►[ Selecciona ]───►[ Visualiza ]───►[ Hace clic en  ]  ║
+║ inicio  modulo        un evento       equipos del     "Solicitar unirse"     ║
+║         Eventos                        evento                                 ║
+║                                                                               ║
+║                                                          │                    ║
+║                                                          ▼                    ║
+║                                        [ Espera respuesta del lider ]        ║
+║                                                          │                    ║
+║                                                          ▼                    ║
+║                                        [ Recibe notificacion ]───►◉          ║
+║                                          de resultado           fin          ║
+║                                                                               ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  SISTEMA                                                                      ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                               ║
+║      │                    │                │                                  ║
+║      ▼                    ▼                ▼                                  ║
+║  ◇ Estado     ◇ Usuario ya    ◇ Solicitud                                   ║
+║    evento =     en equipo       pendiente                                     ║
+║    pendiente?   del evento?     existe?                                       ║
+║      │              │              │                                          ║
+║   Si │ No        Si │ No       Si │ No                                       ║
+║      │  ▼           │  ▼          │  ▼                                       ║
+║      │ ◉fin         │ ◉fin        │ [ Crea solicitud ]                       ║
+║      ▼              ▼             │   status=pending                         ║
+║   continua       continua         │        │                                  ║
+║                                   ▼        ▼                                  ║
+║                                 ◉fin  [ Notifica al lider ]                  ║
+║                                              │                                ║
+║                                              │                                ║
+║      ◇ Usuario en    ◇ Equipo tiene                                         ║
+║        otro equipo?    menos de 5?                                           ║
+║           │               │                                                   ║
+║        Si │ No         Si │ No                                               ║
+║           ▼  ▼            ▼  ▼                                               ║
+║       rechazar  │    [ Registra en ]  ◉fin                                   ║
+║           │     │      team_user                                              ║
+║           ▼     │          │                                                  ║
+║   [ Marca rejected ]       ▼                                                  ║
+║           │         [ Marca accepted ]                                        ║
+║           ▼                │                                                  ║
+║      notifica          notifica                                               ║
+║                                                                               ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  LIDER DEL EQUIPO                                                             ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                               ║
+║                         │                                                     ║
+║                         ▼                                                     ║
+║  [ Accede a ]───►[ Selecciona ]───►[ Ve solicitudes ]───►[ Revisa info ]     ║
+║   Mis Equipos      su equipo         pendientes          del solicitante     ║
+║                                                                │              ║
+║                                                                ▼              ║
+║                                                         ◇ Aprueba            ║
+║                                                           solicitud?         ║
+║                                                           /      \           ║
+║                                                         Si        No         ║
+║                                                         /          \         ║
+║                                                        ▼            ▼        ║
+║                                              [ Aceptar ]    [ Rechazar ]     ║
+║                                                   │              │           ║
+║                                                   ▼              ▼           ║
+║                                           (validaciones)   (al sistema)      ║
+║                                                   │                          ║
+║                                                   ▼                          ║
+║                                           [ Asigna rol ]───►◉               ║
+║                                             al nuevo        fin              ║
+║                                             miembro                          ║
+║                                                                               ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+--------------------------------------------------------------------------------
+                         LEYENDA DE SIMBOLOS
+--------------------------------------------------------------------------------
+●        = Evento de INICIO (circulo verde)
+◉        = Evento de FIN (circulo rojo)
+[ texto ] = Tarea / Actividad (rectangulo redondeado)
+◇        = Gateway / Decision (rombo/diamante amarillo)
+───►     = Flujo de secuencia (flecha)
+│ ▼      = Conexion vertical entre carriles
+
+--------------------------------------------------------------------------------
+                      REGLAS DE NEGOCIO APLICADAS
+--------------------------------------------------------------------------------
+- Solo eventos con estado 'pendiente' permiten solicitudes
+- Usuario no puede estar en mas de un equipo del mismo evento
+- No se permiten solicitudes duplicadas pendientes
+- Solicitudes rechazadas SI permiten volver a solicitar
+- Maximo 5 miembros por equipo
+- El lider es quien acepta o rechaza
+- Al aceptar se valida que usuario no haya sido aceptado en otro equipo
+
+
+================================================================================
+DIAGRAMA 2: EVALUACION DE PROYECTOS POR JURADOS
+================================================================================
+
+ACTORES (SWIMLANES - Carriles horizontales):
+1. ADMINISTRADOR DEL EVENTO
+2. SISTEMA
+3. JURADO (x3)
+
+--------------------------------------------------------------------------------
+                              FLUJO DEL PROCESO
+--------------------------------------------------------------------------------
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  ADMINISTRADOR DEL EVENTO                                                     ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                               ║
+║  ●───►[ Accede a ]───►[ Selecciona 3 ]───►[ Asigna jurados ]                 ║
+║ inicio  Gestionar       usuarios           al evento                         ║
+║         Jurados         administradores                                       ║
+║                                                   │                           ║
+║                                                   ▼                           ║
+║                              [ Cambia estado a 'en_calificacion' ]           ║
+║                                                   │                           ║
+║                                                   │                           ║
+║                              ...espera que jurados califiquen...              ║
+║                                                   │                           ║
+║                                                   ▼                           ║
+║                              [ Revisa promedios calculados ]                 ║
+║                                                   │                           ║
+║                                                   ▼                           ║
+║                                            ◇ Hay empates?                    ║
+║                                              /        \                       ║
+║                                            Si          No                     ║
+║                                            /            \                     ║
+║                                           ▼              │                    ║
+║                              [ Decide orden de ]         │                    ║
+║                                empatados segun           │                    ║
+║                                su criterio               │                    ║
+║                                           \             /                     ║
+║                                            \           /                      ║
+║                                             ▼         ▼                       ║
+║                              [ Asigna posiciones manualmente ]               ║
+║                                                   │                           ║
+║                                                   ▼                           ║
+║                              [ Finaliza evento ]───►◉                        ║
+║                                                    fin                        ║
+║                                                                               ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  SISTEMA                                                                      ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                               ║
+║                              │                                                ║
+║                              ▼                                                ║
+║                      ◇ Tiene exactamente                                     ║
+║                        3 jurados?                                            ║
+║                          /     \                                              ║
+║                        No       Si                                            ║
+║                        /         \                                            ║
+║                       ▼           ▼                                           ║
+║              (volver a       [ Notifica a los ]                              ║
+║               seleccionar)     3 jurados                                      ║
+║                                    │                                          ║
+║                                    │                                          ║
+║                          ◇ Estado =            ◇ Rating entre                ║
+║                            en_calificacion?      1 y 10?                     ║
+║                              /     \               /    \                     ║
+║                            No       Si           No      Si                   ║
+║                            /         \           /        \                   ║
+║                           ▼           ▼         ▼          ▼                  ║
+║                      ◉ fin       continua   (error,    [ Guarda en           ║
+║                                             reingresar) project_jury_        ║
+║                                                          requirement ]        ║
+║                                                              │                ║
+║                                                              │                ║
+║                                    ◇ Todos los proyectos                     ║
+║                                      calificados por                         ║
+║                                      los 3 jurados?                          ║
+║                                        /        \                             ║
+║                                      No          Si                           ║
+║                                      /            \                           ║
+║                                     ▼              ▼                          ║
+║                            (esperar mas    [ Calcula promedios ]             ║
+║                             calificaciones)   por requisito                  ║
+║                                                    │                          ║
+║                                                    ▼                          ║
+║                                            [ Calcula promedio ]              ║
+║                                              global por proyecto             ║
+║                                                    │                          ║
+║                                                    ▼                          ║
+║                                            [ Ordena proyectos ]              ║
+║                                              por promedio DESC               ║
+║                                                    │                          ║
+║                                               (al admin)                      ║
+║                                                                               ║
+║                              [ Bloquea todas ]───►[ Muestra tabla ]          ║
+║                                las modificaciones   de resultados            ║
+║                                                                               ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  JURADO (x3)                                                                  ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                               ║
+║                              │                                                ║
+║                              ▼                                                ║
+║  [ Accede a Mis ]───►[ Selecciona ]───►[ Selecciona ]───►[ Ve requisitos ]   ║
+║    Eventos como        evento           proyecto          del evento         ║
+║    Jurado                                                      │              ║
+║                                                                ▼              ║
+║                                                   [ Ingresa rating 1-10 ]    ║
+║                                                     por cada requisito       ║
+║                                                                │              ║
+║                                                                ▼              ║
+║                                                   [ Guarda calificaciones ]  ║
+║                                                                │              ║
+║                                                                ▼              ║
+║                                                       ◇ Calificar otro      ║
+║                                                         proyecto?            ║
+║                                                          /      \            ║
+║                                                        Si        No          ║
+║                                                        /          \          ║
+║                                                       ▼            ▼         ║
+║                                              (seleccionar    [ Finaliza ]    ║
+║                                               otro proyecto)   sesion        ║
+║                                                                    │         ║
+║                                                               (al sistema)   ║
+║                                                                               ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+--------------------------------------------------------------------------------
+                         LEYENDA DE SIMBOLOS
+--------------------------------------------------------------------------------
+●        = Evento de INICIO (circulo verde)
+◉        = Evento de FIN (circulo rojo)
+[ texto ] = Tarea / Actividad (rectangulo redondeado)
+◇        = Gateway / Decision (rombo/diamante amarillo)
+───►     = Flujo de secuencia (flecha)
+│ ▼      = Conexion vertical entre carriles
+
+--------------------------------------------------------------------------------
+                      REGLAS DE NEGOCIO APLICADAS
+--------------------------------------------------------------------------------
+- Exactamente 3 jurados por evento
+- Jurados solo pueden ser usuarios con rol 'administrador de eventos'
+- Los administradores NO participan en eventos como miembros de equipos
+- Rating debe estar entre 1 y 10 por cada requisito
+- Jurados pueden modificar calificaciones mientras estado = 'en_calificacion'
+- Promedio por requisito = suma de 3 ratings / 3
+- Promedio global = suma de promedios por requisito / total requisitos
+- En caso de empate, el admin decide el orden manualmente
+- Al finalizar se bloquean: calificaciones, GitHub, solicitudes
+
+
+================================================================================
+COMO CREAR LOS DIAGRAMAS EN DRAW.IO
+================================================================================
+
+1. Abre https://app.diagrams.net (Draw.io)
+2. Crea nuevo diagrama
+3. En el menu lateral busca "Swimlanes" o "Pools"
+4. Arrastra un "Pool" con 3 lanes (carriles)
+5. Nombra cada carril segun los actores indicados
+6. Usa las siguientes formas:
+   - "Start Event" (circulo verde) para inicio
+   - "End Event" (circulo rojo) para fin
+   - "Task" (rectangulo redondeado) para actividades
+   - "Exclusive Gateway" (rombo) para decisiones
+7. Conecta con flechas siguiendo el flujo descrito
+8. Exporta como PNG o PDF
+
+================================================================================
+FIN DEL ARCHIVO
+================================================================================
