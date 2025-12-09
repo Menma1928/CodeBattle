@@ -76,7 +76,12 @@
                     <!-- Event Logo/Image -->
                     <a href="{{ route('eventos.show', $event) }}" class="flex-shrink-0">
                         @if($event->url_imagen)
-                            <img src="{{ asset('storage/' . $event->url_imagen) }}" alt="{{ $event->nombre }}" class="w-24 h-24 rounded-xl object-cover group-hover:scale-105 transition-transform duration-200">
+                            @php
+                                $imagenUrl = str_starts_with($event->url_imagen, 'http')
+                                    ? $event->url_imagen
+                                    : asset('storage/' . $event->url_imagen);
+                            @endphp
+                            <img src="{{ $imagenUrl }}" alt="{{ $event->nombre }}" class="w-24 h-24 rounded-xl object-cover group-hover:scale-105 transition-transform duration-200">
                         @else
                             <div class="w-24 h-24 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center text-white text-3xl font-bold group-hover:scale-105 transition-transform duration-200">
                                 {{ substr($event->nombre, 0, 1) }}
