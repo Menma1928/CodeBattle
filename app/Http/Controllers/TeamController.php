@@ -9,11 +9,20 @@ use App\Http\Requests\TeamStoreRequest;
 use App\Http\Requests\TeamUpdateRequest;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Gate;
-use App\Models\Event; 
+use App\Models\Event;
+use Illuminate\Support\Facades\Storage;
 
 class TeamController extends Controller
 {
     use AuthorizesRequests;
+    
+    /**
+     * Get the storage disk to use (public or s3)
+     */
+    private function getStorageDisk(): string
+    {
+        return config('filesystems.default');
+    }
     public function index(Request $request){
         $title = "Equipos";
         $query = Team::with(['event', 'users', 'project']); // Eager loading optimizado
@@ -109,21 +118,24 @@ class TeamController extends Controller
 
         // Manejar subida de banner si existe (después de crear el equipo para tener el ID)
         if ($request->hasFile('banner')) {
-            $banner = $request->file('banner');
-            $extension = $banner->getClientOriginalExtension();
-            $bannerName = 'banner.' . $extension;
-
-            // Asegurar que el directorio existe
-            $directory = 'teams/' . $team->id;
-            \Storage::disk('public')->makeDirectory($directory);
-
-            // Guardar en storage/app/public/teams/{team_id}/banner.ext
-            $banner->storeAs($directory, $bannerName, 'public');
-
-            // Guardar ruta relativa en BD: teams/{team_id}/banner.ext
-            $team->update([
-                'url_banner' => 'teams/' . $team->id . '/' . $bannerName
-            ]);
+            $disk = $this->getStorageDisk();
+            
+            if ($disk === 's3') {
+                // Almacenamiento en S3 (Producción)
+                $path = $request->file('banner')->store('teams/' . $team->id, 's3');
+                $team->update(['url_banner' => Storage::disk('s3')->url($path)]);
+            } else {
+                // Almacenamiento local (Desarrollo)
+                $banner = $request->file('banner');
+                $extension = $banner->getClientOriginalExtension();
+                $bannerName = 'banner.' . $extension;
+                $directory = 'teams/' . $team->id;
+                
+                Storage::disk('public')->makeDirectory($directory);
+                $banner->storeAs($directory, $bannerName, 'public');
+                
+                $team->update(['url_banner' => $directory . '/' . $bannerName]);
+            }
         }
 
         // Cargar la relación del evento antes de redirigir
@@ -145,24 +157,36 @@ class TeamController extends Controller
 
         // Manejar subida de nuevo banner si existe
         if ($request->hasFile('banner')) {
-            $banner = $request->file('banner');
-            $extension = $banner->getClientOriginalExtension();
-            $bannerName = 'banner.' . $extension;
-
-            // Eliminar banner anterior si existe (toda la carpeta del equipo)
+            $disk = $this->getStorageDisk();
+            
+            // Eliminar banner anterior
             if ($equipo->url_banner) {
-                \Storage::disk('public')->deleteDirectory('teams/' . $equipo->id);
+                if ($disk === 's3') {
+                    // Eliminar de S3
+                    $path = parse_url($equipo->url_banner, PHP_URL_PATH);
+                    Storage::disk('s3')->delete(ltrim($path, '/'));
+                } else {
+                    // Eliminar de almacenamiento local
+                    Storage::disk('public')->deleteDirectory('teams/' . $equipo->id);
+                }
             }
-
-            // Asegurar que el directorio existe
-            $directory = 'teams/' . $equipo->id;
-            \Storage::disk('public')->makeDirectory($directory);
-
-            // Guardar en storage/app/public/teams/{team_id}/banner.ext
-            $banner->storeAs($directory, $bannerName, 'public');
-
-            // Guardar ruta relativa en BD: teams/{team_id}/banner.ext
-            $updateData['url_banner'] = 'teams/' . $equipo->id . '/' . $bannerName;
+            
+            if ($disk === 's3') {
+                // Almacenamiento en S3 (Producción)
+                $path = $request->file('banner')->store('teams/' . $equipo->id, 's3');
+                $updateData['url_banner'] = Storage::disk('s3')->url($path);
+            } else {
+                // Almacenamiento local (Desarrollo)
+                $banner = $request->file('banner');
+                $extension = $banner->getClientOriginalExtension();
+                $bannerName = 'banner.' . $extension;
+                $directory = 'teams/' . $equipo->id;
+                
+                Storage::disk('public')->makeDirectory($directory);
+                $banner->storeAs($directory, $bannerName, 'public');
+                
+                $updateData['url_banner'] = $directory . '/' . $bannerName;
+            }
         }
 
         $equipo->update($updateData);
@@ -172,6 +196,21 @@ class TeamController extends Controller
 
     public function destroy(Team $equipo){
         $this->authorize('delete', $equipo);
+        
+        $disk = $this->getStorageDisk();
+        
+        // Eliminar banner
+        if ($equipo->url_banner) {
+            if ($disk === 's3') {
+                // Eliminar de S3
+                $path = parse_url($equipo->url_banner, PHP_URL_PATH);
+                Storage::disk('s3')->delete(ltrim($path, '/'));
+            } else {
+                // Eliminar de almacenamiento local
+                Storage::disk('public')->deleteDirectory('teams/' . $equipo->id);
+            }
+        }
+        
         $equipo->delete();
         return redirect()->route('equipos.index');
     }

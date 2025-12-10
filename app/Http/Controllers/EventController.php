@@ -11,10 +11,19 @@ use App\Http\Requests\EventStoreRequest;
 use App\Http\Requests\EventUpdateRequest;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
     use AuthorizesRequests;
+    
+    /**
+     * Get the storage disk to use (public or s3)
+     */
+    private function getStorageDisk(): string
+    {
+        return config('filesystems.default');
+    }
     
     /**
      * Actualiza los estados de eventos que no están finalizados
@@ -118,21 +127,24 @@ class EventController extends Controller
 
         // Manejar subida de imagen si existe (después de crear el evento para tener el ID)
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $extension = $image->getClientOriginalExtension();
-            $imageName = 'image.' . $extension;
-
-            // Asegurar que el directorio existe
-            $directory = 'events/' . $event->id;
-            \Storage::disk('public')->makeDirectory($directory);
-
-            // Guardar en storage/app/public/events/{event_id}/image.ext
-            $image->storeAs($directory, $imageName, 'public');
-
-            // Guardar ruta relativa en BD: events/{event_id}/image.ext
-            $event->update([
-                'url_imagen' => 'events/' . $event->id . '/' . $imageName
-            ]);
+            $disk = $this->getStorageDisk();
+            
+            if ($disk === 's3') {
+                // Almacenamiento en S3 (Producción)
+                $path = $request->file('image')->store('events/' . $event->id, 's3');
+                $event->update(['url_imagen' => Storage::disk('s3')->url($path)]);
+            } else {
+                // Almacenamiento local (Desarrollo)
+                $image = $request->file('image');
+                $extension = $image->getClientOriginalExtension();
+                $imageName = 'image.' . $extension;
+                $directory = 'events/' . $event->id;
+                
+                Storage::disk('public')->makeDirectory($directory);
+                $image->storeAs($directory, $imageName, 'public');
+                
+                $event->update(['url_imagen' => $directory . '/' . $imageName]);
+            }
         }
 
         // Guardar reglas si existen
@@ -185,24 +197,36 @@ class EventController extends Controller
 
         // Manejar subida de nueva imagen si existe
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $extension = $image->getClientOriginalExtension();
-            $imageName = 'image.' . $extension;
-
-            // Eliminar imagen anterior si existe (toda la carpeta del evento)
+            $disk = $this->getStorageDisk();
+            
+            // Eliminar imagen anterior
             if ($evento->url_imagen) {
-                \Storage::disk('public')->deleteDirectory('events/' . $evento->id);
+                if ($disk === 's3') {
+                    // Eliminar de S3
+                    $path = parse_url($evento->url_imagen, PHP_URL_PATH);
+                    Storage::disk('s3')->delete(ltrim($path, '/'));
+                } else {
+                    // Eliminar de almacenamiento local
+                    Storage::disk('public')->deleteDirectory('events/' . $evento->id);
+                }
             }
-
-            // Asegurar que el directorio existe
-            $directory = 'events/' . $evento->id;
-            \Storage::disk('public')->makeDirectory($directory);
-
-            // Guardar en storage/app/public/events/{event_id}/image.ext
-            $image->storeAs($directory, $imageName, 'public');
-
-            // Guardar ruta relativa en BD: events/{event_id}/image.ext
-            $updateData['url_imagen'] = 'events/' . $evento->id . '/' . $imageName;
+            
+            if ($disk === 's3') {
+                // Almacenamiento en S3 (Producción)
+                $path = $request->file('image')->store('events/' . $evento->id, 's3');
+                $updateData['url_imagen'] = Storage::disk('s3')->url($path);
+            } else {
+                // Almacenamiento local (Desarrollo)
+                $image = $request->file('image');
+                $extension = $image->getClientOriginalExtension();
+                $imageName = 'image.' . $extension;
+                $directory = 'events/' . $evento->id;
+                
+                Storage::disk('public')->makeDirectory($directory);
+                $image->storeAs($directory, $imageName, 'public');
+                
+                $updateData['url_imagen'] = $directory . '/' . $imageName;
+            }
         }
 
         $evento->update($updateData);
@@ -239,6 +263,21 @@ class EventController extends Controller
 
     public function destroy(Event $evento){
         $this->authorize('delete', $evento);
+        
+        $disk = $this->getStorageDisk();
+        
+        // Eliminar imagen
+        if ($evento->url_imagen) {
+            if ($disk === 's3') {
+                // Eliminar de S3
+                $path = parse_url($evento->url_imagen, PHP_URL_PATH);
+                Storage::disk('s3')->delete(ltrim($path, '/'));
+            } else {
+                // Eliminar de almacenamiento local
+                Storage::disk('public')->deleteDirectory('events/' . $evento->id);
+            }
+        }
+        
         $evento->delete();
         return redirect()->route('eventos.index');
     }
