@@ -122,7 +122,14 @@ class TeamController extends Controller
             
             if ($disk === 's3') {
                 // Almacenamiento en S3 (Producción)
-                $path = $request->file('banner')->store('teams/' . $team->id, 's3');
+                $file = $request->file('banner');
+                $filename = 'team_' . $team->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $path = 'teams/' . $filename;
+                
+                // Subir archivo con visibilidad pública
+                Storage::disk('s3')->put($path, file_get_contents($file), 'public');
+                
+                // Guardar URL completa
                 $team->update(['url_banner' => Storage::disk('s3')->url($path)]);
             } else {
                 // Almacenamiento local (Desarrollo)
@@ -162,9 +169,15 @@ class TeamController extends Controller
             // Eliminar banner anterior
             if ($equipo->url_banner) {
                 if ($disk === 's3') {
-                    // Eliminar de S3
-                    $path = parse_url($equipo->url_banner, PHP_URL_PATH);
-                    Storage::disk('s3')->delete(ltrim($path, '/'));
+                    // Extraer el path de la URL completa
+                    $urlPath = parse_url($equipo->url_banner, PHP_URL_PATH);
+                    $pathToDelete = ltrim($urlPath, '/');
+                    
+                    try {
+                        Storage::disk('s3')->delete($pathToDelete);
+                    } catch (\Exception $e) {
+                        \Log::warning('No se pudo eliminar el banner anterior de S3: ' . $e->getMessage());
+                    }
                 } else {
                     // Eliminar de almacenamiento local
                     Storage::disk('public')->deleteDirectory('teams/' . $equipo->id);
@@ -173,7 +186,14 @@ class TeamController extends Controller
             
             if ($disk === 's3') {
                 // Almacenamiento en S3 (Producción)
-                $path = $request->file('banner')->store('teams/' . $equipo->id, 's3');
+                $file = $request->file('banner');
+                $filename = 'team_' . $equipo->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $path = 'teams/' . $filename;
+                
+                // Subir archivo con visibilidad pública
+                Storage::disk('s3')->put($path, file_get_contents($file), 'public');
+                
+                // Guardar URL completa
                 $updateData['url_banner'] = Storage::disk('s3')->url($path);
             } else {
                 // Almacenamiento local (Desarrollo)
@@ -202,9 +222,15 @@ class TeamController extends Controller
         // Eliminar banner
         if ($equipo->url_banner) {
             if ($disk === 's3') {
-                // Eliminar de S3
-                $path = parse_url($equipo->url_banner, PHP_URL_PATH);
-                Storage::disk('s3')->delete(ltrim($path, '/'));
+                // Extraer el path de la URL completa
+                $urlPath = parse_url($equipo->url_banner, PHP_URL_PATH);
+                $pathToDelete = ltrim($urlPath, '/');
+                
+                try {
+                    Storage::disk('s3')->delete($pathToDelete);
+                } catch (\Exception $e) {
+                    \Log::warning('No se pudo eliminar el banner de S3: ' . $e->getMessage());
+                }
             } else {
                 // Eliminar de almacenamiento local
                 Storage::disk('public')->deleteDirectory('teams/' . $equipo->id);

@@ -131,7 +131,14 @@ class EventController extends Controller
             
             if ($disk === 's3') {
                 // Almacenamiento en S3 (Producción)
-                $path = $request->file('image')->store('events/' . $event->id, 's3');
+                $file = $request->file('image');
+                $filename = 'event_' . $event->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $path = 'events/' . $filename;
+                
+                // Subir archivo con visibilidad pública
+                Storage::disk('s3')->put($path, file_get_contents($file), 'public');
+                
+                // Guardar URL completa
                 $event->update(['url_imagen' => Storage::disk('s3')->url($path)]);
             } else {
                 // Almacenamiento local (Desarrollo)
@@ -202,9 +209,16 @@ class EventController extends Controller
             // Eliminar imagen anterior
             if ($evento->url_imagen) {
                 if ($disk === 's3') {
-                    // Eliminar de S3
-                    $path = parse_url($evento->url_imagen, PHP_URL_PATH);
-                    Storage::disk('s3')->delete(ltrim($path, '/'));
+                    // Extraer el path de la URL completa
+                    $urlPath = parse_url($evento->url_imagen, PHP_URL_PATH);
+                    $pathToDelete = ltrim($urlPath, '/');
+                    
+                    // Intentar eliminar (no fallar si no existe)
+                    try {
+                        Storage::disk('s3')->delete($pathToDelete);
+                    } catch (\Exception $e) {
+                        \Log::warning('No se pudo eliminar la imagen anterior de S3: ' . $e->getMessage());
+                    }
                 } else {
                     // Eliminar de almacenamiento local
                     Storage::disk('public')->deleteDirectory('events/' . $evento->id);
@@ -213,7 +227,14 @@ class EventController extends Controller
             
             if ($disk === 's3') {
                 // Almacenamiento en S3 (Producción)
-                $path = $request->file('image')->store('events/' . $evento->id, 's3');
+                $file = $request->file('image');
+                $filename = 'event_' . $evento->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $path = 'events/' . $filename;
+                
+                // Subir archivo con visibilidad pública
+                Storage::disk('s3')->put($path, file_get_contents($file), 'public');
+                
+                // Guardar URL completa
                 $updateData['url_imagen'] = Storage::disk('s3')->url($path);
             } else {
                 // Almacenamiento local (Desarrollo)
@@ -269,9 +290,15 @@ class EventController extends Controller
         // Eliminar imagen
         if ($evento->url_imagen) {
             if ($disk === 's3') {
-                // Eliminar de S3
-                $path = parse_url($evento->url_imagen, PHP_URL_PATH);
-                Storage::disk('s3')->delete(ltrim($path, '/'));
+                // Extraer el path de la URL completa
+                $urlPath = parse_url($evento->url_imagen, PHP_URL_PATH);
+                $pathToDelete = ltrim($urlPath, '/');
+                
+                try {
+                    Storage::disk('s3')->delete($pathToDelete);
+                } catch (\Exception $e) {
+                    \Log::warning('No se pudo eliminar la imagen de S3: ' . $e->getMessage());
+                }
             } else {
                 // Eliminar de almacenamiento local
                 Storage::disk('public')->deleteDirectory('events/' . $evento->id);
