@@ -212,6 +212,85 @@
                 </a>
                 @endif
             </div>
+
+            <!-- Reportes y Constancias (Solo Administrador) -->
+            @if($user_is_admin)
+            <x-card class="mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Reportes y Constancias
+                    </h3>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Reporte PDF -->
+                    <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 p-6 rounded-lg border border-red-200 dark:border-red-800">
+                        <div class="flex items-center gap-3 mb-3">
+                            <svg class="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                            </svg>
+                            <div>
+                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Reporte PDF</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Documento completo del evento</p>
+                            </div>
+                        </div>
+                        <a href="{{ route('eventos.report.pdf', $evento) }}" class="block">
+                            <x-primary-button class="w-full justify-center bg-red-600 hover:bg-red-700">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                Descargar PDF
+                            </x-primary-button>
+                        </a>
+                    </div>
+
+                    <!-- Reporte Excel -->
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-6 rounded-lg border border-green-200 dark:border-green-800">
+                        <div class="flex items-center gap-3 mb-3">
+                            <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <div>
+                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Reporte Excel</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Datos exportables y editables</p>
+                            </div>
+                        </div>
+                        <a href="{{ route('eventos.report.excel', $evento) }}" class="block">
+                            <x-primary-button class="w-full justify-center bg-green-600 hover:bg-green-700">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                Descargar Excel
+                            </x-primary-button>
+                        </a>
+                    </div>
+
+                    <!-- Constancias Individuales (todas) -->
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 p-6 rounded-lg border border-purple-200 dark:border-purple-800 md:col-span-2">
+                        <div class="flex items-center gap-3 mb-3">
+                            <svg class="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <div>
+                                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Constancias de Participación</h4>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Descarga todas las constancias en un archivo ZIP</p>
+                            </div>
+                        </div>
+                        <a href="{{ route('eventos.certificates.all', $evento) }}" class="block">
+                            <x-primary-button class="w-full justify-center bg-purple-600 hover:bg-purple-700">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                Descargar Todas las Constancias (ZIP)
+                            </x-primary-button>
+                        </a>
+                    </div>
+                </div>
+            </x-card>
+            @endif
             @endif
 
             <!-- Certificate Download Button -->

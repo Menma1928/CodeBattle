@@ -252,7 +252,7 @@ class EventController extends Controller
         }
         
         $evento->load('eventRules', 'requirements', 'juries', 'admin');
-        $user_is_admin = auth()->id() === $evento->admin_id;
+        $user_is_admin = auth()->id() === $evento->admin_id || auth()->user()->hasRole('Super Admin');
         $user_is_jury = $evento->juries()->where('user_id', auth()->id())->exists();
         $user_team = null;
 
